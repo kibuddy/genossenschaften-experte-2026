@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beschluss-Generator für Genossenschaften</title>
+<style>
+/* Lokale System-Schriften statt externer Google Fonts (DSGVO: kein externer Aufruf). Für die Produktivversion echte Font-Dateien lokal hosten. */
+:root{--bg:#0d1b2a;--surf:#18293d;--surf2:#1f3349;--bor:#2a3f57;--gold:#c9a84c;--goldl:#e0c07a;--teal:#2fc4b2;--txt:#dde6ef;--muted:#7a96ae;--vst:#5b9cf6;--gvv:#a77bf5;--green:#3dd68c;--red:#f07070;--amber:#f5a742}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding:20px 16px 40px}
+.wrap{max-width:780px;margin:0 auto}
+.hdr{text-align:center;margin-bottom:18px}
+.hdr h1{font-family:Georgia,'Times New Roman',serif;font-size:25px;color:var(--gold);margin-bottom:6px}
+.hdr p{color:var(--muted);font-size:12.5px;line-height:1.55;max-width:580px;margin:0 auto}
+.law-badge{display:inline-block;margin-top:8px;padding:3px 12px;border:1px solid rgba(201,168,76,.35);border-radius:20px;font-size:11px;color:var(--goldl);font-weight:500}
+.mtoggle{display:flex;background:var(--surf);border:1px solid var(--bor);border-radius:10px;padding:3px;gap:3px;width:fit-content;margin:18px auto 4px}
+.mbtn{padding:8px 20px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:transparent;color:var(--muted);transition:all .2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+.mbtn.on{background:var(--gold);color:#0d1b2a}
+.card{background:var(--surf);border:1px solid var(--bor);border-radius:14px;padding:20px;margin-bottom:16px}
+.card h2{font-family:Georgia,'Times New Roman',serif;font-size:17px;color:var(--gold);margin-bottom:4px}
+.card .sub{color:var(--muted);font-size:11.5px;margin-bottom:14px;line-height:1.55}
+.chead{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.chev{color:var(--muted);font-size:13px;transition:.2s}
+.chev.open{transform:rotate(180deg)}
+.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:13px 0 6px}
+.hlp{font-size:11px;color:var(--muted);line-height:1.5;margin:3px 0 0}
+select,input,textarea{width:100%;background:var(--surf2);border:1px solid var(--bor);border-radius:9px;padding:10px 12px;color:var(--txt);font-size:13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--gold)}
+textarea{resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.chkrow{display:flex;align-items:flex-start;gap:9px;padding:7px 0;font-size:12.5px;line-height:1.45}
+.chkrow input[type=checkbox]{width:auto;margin-top:2px}
+.kat{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.kchip{padding:5px 10px;border-radius:14px;font-size:11px;border:1px solid var(--bor);background:var(--surf2);color:var(--muted);cursor:pointer;user-select:none}
+.kchip.on{background:rgba(201,168,76,.15);border-color:var(--gold);color:var(--goldl)}
+.betrag-wrap{display:none}
+.betrag-wrap.show{display:block}
+.gbtn{width:100%;margin-top:16px;padding:13px;border-radius:10px;border:none;background:var(--gold);color:#0d1b2a;font-size:14px;font-weight:700;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;transition:.2s}
+.gbtn:hover{background:var(--goldl)}
+.gbtn:disabled{opacity:.5;cursor:not-allowed}
+.gbtn.dl{background:var(--teal);color:#08201d}
+.gbtn.dl:hover{filter:brightness(1.1)}
+.result{display:none}
+.result.show{display:block;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.verdict{border-radius:12px;padding:16px 18px;margin-bottom:14px;border:1px solid}
+.verdict.no{background:rgba(61,214,140,.08);border-color:rgba(61,214,140,.35)}
+.verdict.yes{background:rgba(245,167,66,.08);border-color:rgba(245,167,66,.35)}
+.verdict.gv{background:rgba(167,123,245,.08);border-color:rgba(167,123,245,.35)}
+.verdict .vtop{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.vico{font-size:24px}
+.vtitle{font-size:16px;font-weight:700}
+.verdict.no .vtitle{color:var(--green)}.verdict.yes .vtitle{color:var(--amber)}.verdict.gv .vtitle{color:var(--gvv)}
+.vmeta{font-size:12px;color:var(--txt);line-height:1.6}
+.vmeta b{color:var(--goldl)}
+.org-badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;margin-left:2px}
+.ob-vst{background:rgba(91,156,246,.16);color:var(--vst)}.ob-gv{background:rgba(167,123,245,.16);color:var(--gvv)}
+.esc{display:flex;gap:9px;align-items:flex-start;background:rgba(240,112,112,.08);border:1px solid rgba(240,112,112,.3);border-left:3px solid var(--red);border-radius:8px;padding:11px 13px;margin-bottom:10px;font-size:12px;line-height:1.55}
+.esc .ei{font-size:16px;flex-shrink:0}
+.esc b{color:var(--red);display:block;margin-bottom:2px;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.svote{display:flex;gap:9px;align-items:flex-start;background:rgba(91,156,246,.08);border:1px solid rgba(91,156,246,.3);border-left:3px solid var(--vst);border-radius:8px;padding:11px 13px;margin-bottom:14px;font-size:12px;line-height:1.55}
+.svote .ei{font-size:15px;flex-shrink:0}
+.svote b{color:var(--vst);display:block;margin-bottom:2px;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.hints{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.hint{background:var(--surf2);border:1px solid var(--bor);border-radius:10px;padding:12px 14px}
+.hint.fw{grid-column:1/-1}
+.hint h4{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;margin-bottom:6px}
+.hint.warum h4{color:var(--teal)}.hint.geng h4{color:var(--goldl)}.hint.satz h4{color:var(--vst)}.hint.esk h4{color:var(--amber)}.hint.foe h4{color:var(--green)}
+.hint p{font-size:12px;line-height:1.55;color:var(--txt)}
+.hint .geng-tag{display:inline-block;background:rgba(201,168,76,.12);color:var(--goldl);border:1px solid rgba(201,168,76,.25);border-radius:6px;padding:1px 7px;font-size:11px;margin:2px 3px 0 0}
+.doc{background:#0a1521;border:1px solid var(--bor);border-radius:10px;padding:16px;margin-bottom:12px;position:relative}
+.doc .dtabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.dtab{padding:5px 11px;border-radius:7px;border:1px solid var(--bor);background:var(--surf);color:var(--muted);font-size:11px;cursor:pointer;font-weight:600}
+.dtab.on{background:var(--gold);color:#0d1b2a;border-color:var(--gold)}
+.doc pre{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12.5px;line-height:1.7;white-space:pre-wrap;color:var(--txt)}
+.doc .ph{color:var(--amber);font-weight:600}
+.copy{position:absolute;top:12px;right:12px;background:var(--surf2);border:1px solid var(--bor);color:var(--muted);border-radius:7px;padding:5px 11px;font-size:11px;cursor:pointer;font-weight:600}
+.copy:hover{border-color:var(--gold);color:var(--gold)}
+.docstatus{display:flex;align-items:center;gap:8px;font-size:11.5px;margin-bottom:10px;padding:8px 11px;border-radius:8px;background:var(--surf2);border:1px solid var(--bor)}
+.docstatus.opt{color:var(--teal);border-color:rgba(47,196,178,.3)}
+.docstatus.ok{color:var(--green);border-color:rgba(61,214,140,.3)}
+.docstatus.warn{color:var(--amber);border-color:rgba(245,167,66,.3)}
+.docstatus a{color:var(--goldl);cursor:pointer;margin-left:auto;text-decoration:underline}
+.spin{width:13px;height:13px;border:2px solid rgba(47,196,178,.3);border-top-color:var(--teal);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.disc{font-size:11px;line-height:1.6;color:var(--muted);background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.18);border-radius:8px;padding:11px 13px}
+.privacy{font-size:11px;line-height:1.6;color:var(--txt);background:rgba(91,156,246,.06);border:1px solid rgba(91,156,246,.28);border-left:3px solid var(--vst);border-radius:8px;padding:11px 13px;margin-top:14px}
+.privacy b{color:var(--vst);display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.privacy ul{margin:6px 0 0 16px;padding:0}
+.privacy li{margin-bottom:3px}
+.ai-badge{display:inline-block;margin-left:6px;padding:3px 10px;border:1px solid rgba(167,123,245,.4);border-radius:20px;font-size:11px;font-weight:600;background:rgba(167,123,245,.12);color:var(--gvv)}
+.qsbox{border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:11.5px;line-height:1.55;background:rgba(245,167,66,.07);border:1px solid rgba(245,167,66,.3)}
+.qsbox b{color:var(--amber);display:block;margin-bottom:4px;font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.qsbox ul{margin:4px 0 0 16px;padding:0}
+.qsbox li{margin-bottom:2px}
+.qsbox.clean{background:rgba(61,214,140,.07);border-color:rgba(61,214,140,.3)}
+.qsbox.clean b{color:var(--green)}
+.ctxnote{font-size:11.5px;line-height:1.55;color:var(--muted);background:var(--surf2);border:1px solid var(--bor);border-radius:8px;padding:10px 12px;margin-bottom:12px}
+.ctxnote b{color:var(--goldl)}
+.disc b{color:var(--goldl)}
+.checklist{margin-top:14px}
+.cl-item{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.cl-item:last-child{border-bottom:none}
+.cl-head{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;line-height:1.5}
+.cl-mark{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.cl-ok{background:rgba(61,214,140,.15);color:var(--green);border:1px solid rgba(61,214,140,.4)}
+.cl-miss{background:rgba(240,112,112,.15);color:var(--red);border:1px solid rgba(240,112,112,.4)}
+.cl-warn{background:rgba(245,167,66,.15);color:var(--amber);border:1px solid rgba(245,167,66,.4)}
+.cl-txt b{color:var(--goldl)}
+.cl-expl{font-size:11.5px;color:var(--muted);margin:6px 0 0 30px;line-height:1.55}
+.passus{margin:8px 0 0 30px;background:#0a1521;border:1px solid var(--bor);border-left:3px solid var(--teal);border-radius:7px;padding:9px 11px;position:relative}
+.passus .pl{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);font-weight:800;margin-bottom:4px}
+.passus pre{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:11.5px;line-height:1.55;white-space:pre-wrap;color:var(--txt)}
+.passus .pcopy{position:absolute;top:8px;right:8px;font-size:10px;color:var(--muted);cursor:pointer;background:var(--surf2);border:1px solid var(--bor);border-radius:6px;padding:2px 7px}
+.score{text-align:center;padding:14px;border-radius:10px;margin:14px 0 6px;background:var(--surf2);border:1px solid var(--bor)}
+.score .sn{font-size:28px;font-weight:700;color:var(--gold);font-family:Georgia,'Times New Roman',serif}
+.score .sl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.scoremsg{text-align:center;font-size:12px;color:var(--txt);margin-bottom:6px}
+.hide{display:none!important}
+.profbody{margin-top:8px}
+.valpanel{margin-top:14px}
+.valitem{display:flex;gap:9px;align-items:flex-start;border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:12px;line-height:1.55}
+.valitem:last-child{margin-bottom:0}
+.valitem .vi{font-size:14px;flex-shrink:0;margin-top:1px}
+.valitem.err{background:rgba(240,112,112,.08);border:1px solid rgba(240,112,112,.3);border-left:3px solid var(--red)}
+.valitem.warn{background:rgba(245,167,66,.08);border:1px solid rgba(245,167,66,.3);border-left:3px solid var(--amber)}
+.valitem b{display:block;margin-bottom:2px}
+.valitem.err b{color:var(--red)}.valitem.warn b{color:var(--amber)}
+input.bad,textarea.bad{border-color:var(--red)!important}
+.confirmrow{display:flex;align-items:flex-start;gap:8px;margin-top:8px;font-size:11.5px;color:var(--txt);line-height:1.45}
+.confirmrow input{width:auto;margin-top:2px}
+@media(max-width:560px){.hints{grid-template-columns:1fr}.row2,.row3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="hdr">
+  <h1>Beschluss-Generator für Genossenschaften</h1>
+  <p>Sie tragen Ihre Gedanken in Stichpunkten ein — das System formuliert daraus einen sauberen Beschluss-Entwurf in ordentlicher Sprache, mit Überschrift, Begründung und Förderzweck-Bezug. Grundlage: das GenG und die in Ihrem System hinterlegte Satzung. Der Entwurf erleichtert das Verfassen; die finale Prüfung bleibt bei Ihnen.</p>
+  <span class="law-badge">GenG · Entwurfsgenerator · Prototyp V8</span><span class="ai-badge">🤖 KI-gestützt</span>
+  <div class="mtoggle">
+    <button class="mbtn on" id="bGen" onclick="setMode('gen')">① Beschluss erzeugen</button>
+    <button class="mbtn" id="bPru" onclick="setMode('pru')">② Beschluss prüfen</button>
+  </div>
+</div>
+
+<!-- ===== eG-PROFIL ===== -->
+<div class="card">
+  <div class="chead" onclick="toggleProf()">
+    <div><h2 style="margin:0">Angaben Ihrer Genossenschaft</h2><div class="sub" style="margin:2px 0 0">Diese Werte stammen aus der in Ihrem System hinterlegten Satzung und können bei Bedarf angepasst werden. Der Förderzweck ist Grundlage jedes Beschlusses.</div></div>
+    <span class="chev open" id="profChev">▾</span>
+  </div>
+  <div class="profbody" id="profBody">
+    <div class="row2">
+      <div><div class="lbl">Name der eG</div><input id="pName" type="text" placeholder="Ihre Genossenschaft eG"></div>
+      <div><div class="lbl">Sitz</div><input id="pSitz" type="text" placeholder="[Ort]"></div>
+    </div>
+    <div class="lbl">Förderzweck (§ 1 GenG) — Grundlage jedes Beschlusses</div>
+    <textarea id="pFoerder" rows="2" placeholder="z. B.: Förderung des Erwerbs und der Wirtschaft der Mitglieder durch gemeinschaftlichen Geschäftsbetrieb — sowie der sozialen und kulturellen Belange."></textarea>
+    <div class="hlp">Wird im Beschluss als Förderzweck-Bezug verwendet. Bei Investitionen zugunsten der Mitglieder ist dieser Bezug wichtig (Mitgliederförderung).</div>
+    <div class="row3">
+      <div><div class="lbl">Mitglieder</div><input id="pMitglieder" type="number" value="12"></div>
+      <div><div class="lbl">Vorstand (Anzahl)</div><input id="pVorstand" type="number" value="1"></div>
+      <div><div class="lbl">Geschäftsanteil €</div><input id="pAnteil" type="number" placeholder="z. B. 250"></div>
+    </div>
+    <div class="chkrow"><input type="checkbox" id="pAR"><label for="pAR">Aufsichtsrat vorhanden (bei ≤20 Mitgliedern meist nein → die Generalversammlung übernimmt die Rechte des Aufsichtsrats, § 9 Abs. 1 S. 3 GenG)</label></div>
+    <div class="chkrow"><input type="checkbox" id="pWeisung"><label for="pWeisung">Generalversammlung kann dem Vorstand Weisungen erteilen (§ 27 Abs. 2 GenG, nur bei ≤20 Mitgliedern zulässig)</label></div>
+    <div class="chkrow"><input type="checkbox" id="pUmlauf" checked><label for="pUmlauf">Schriftliche/elektronische Beschlussfassung laut Satzung zugelassen (§ 43b Abs. 2 GenG)</label></div>
+    <div class="chkrow"><input type="checkbox" id="pDigital"><label for="pDigital">Satzung/Geschäftsordnung lässt <b style="color:var(--goldl);font-weight:600">virtuelle oder hybride Vorstands-/AR-Sitzungen</b> zu (für die GV gilt ohnehin § 43b GenG; für Vorstand/AR gibt es keine pauschale gesetzliche Erlaubnis — daher Satzungsvorbehalt)</label></div>
+    <div class="chkrow"><input type="checkbox" id="pInvestMitglieder"><label for="pInvestMitglieder">Genossenschaft lässt <b style="color:var(--goldl);font-weight:600">investierende Mitglieder</b> zu (§ 8 Abs. 2 GenG — dürfen die nutzenden Mitglieder nicht überstimmen)</label></div>
+    <div class="lbl">Betragsschwellen aus der Satzung (leer = Satzung nennt keine Grenze)</div>
+    <div class="hlp" style="margin-bottom:6px">Wenn die Satzung keine konkrete Grenze nennt, entscheidet der Vorstand eigenverantwortlich (Geschäftsführung). Dann empfiehlt das Tool einen internen Aktenvermerk statt eines Beschlusses.</div>
+    <div class="row3">
+      <div><div class="lbl" style="margin:0 0 4px">Investition Vorstand bis €</div><input id="pInvest" type="number" placeholder="leer = keine"></div>
+      <div><div class="lbl" style="margin:0 0 4px">Darlehen bis €</div><input id="pDarlehen" type="number" placeholder="leer = keine"></div>
+      <div><div class="lbl" style="margin:0 0 4px">Dauerschuld p.a. bis €</div><input id="pDauer" type="number" placeholder="leer = keine"></div>
+    </div>
+    <div class="lbl">Zustimmungskatalog der Generalversammlung (aus Ihrer Satzung) — antippen zum Aktivieren</div>
+    <div class="kat" id="katChips"></div>
+    <div class="row2">
+      <div><div class="lbl">Beschlussfähig ab (Mitglieder)</div><input id="pQuorum" type="number" value="3"></div>
+      <div><div class="lbl">Mehrheit bei Satzungsänderung</div><input id="pMaj" type="text" value="0,75"></div>
+    </div>
+    <div class="valpanel" id="profValidation"></div>
+  </div>
+</div>
+
+<!-- ===== MODUS 1 ===== -->
+<div id="modeGen">
+  <div class="card">
+    <h2>Ihre Beschluss-Eingaben</h2>
+    <div class="sub">Stichpunkte genügen — das System formuliert daraus saubere Sätze. Aus Ihren Angaben entsteht ein Entwurf, den Sie anschließend prüfen und finalisieren.</div>
+    <div class="lbl">Worum geht es? — Ihre Gedanken / Stichpunkte</div>
+    <textarea id="titelIn" rows="3" placeholder="z. B.: Reise um neue Objekte/Immobilien für Mitglieder + Kurzzeitvermietung anzuschauen und ggf. anzumieten"></textarea>
+    <div class="hlp">Schreiben Sie frei, worum es geht. Das System macht daraus eine saubere Überschrift.</div>
+    <div class="lbl">Art des Vorgangs — zur Orientierung &amp; rechtlichen Einordnung</div>
+    <select id="fallSel" onchange="onFallChange()"></select>
+    <div class="hlp">Dient als Inspiration und legt fest, welche Regeln des GenG geprüft werden.</div>
+    <div class="betrag-wrap" id="betragWrap">
+      <div class="lbl">Betrag / Volumen (€)</div>
+      <input type="number" id="betragIn" placeholder="z. B. 15000">
+    </div>
+    <div class="lbl">Sachverhalt, Begründung &amp; ggf. Berechnung — Stichpunkte genügen</div>
+    <textarea id="substanceIn" rows="6" placeholder="Tragen Sie Ihre Gedanken ein, das System formuliert sie aus. Beispiele:
+• Objekte besichtigen, Region/Infrastruktur erkunden, ggf. anmieten
+• Fahrzeug für Mitglieder: Wie erhalten sie Zugriff? Beteiligungswert?
+• Berechnung: Anschaffungswert 24000 €, Beteiligung je Mitglied, Nutzungsentgelt
+• Bezug zur Mitgliederförderung"></textarea>
+    <div class="hlp">Zahlen und Berechnungen werden übernommen; fehlende Werte markiert das System als [Platzhalter].</div>
+    <div class="lbl">Beschluss-Nr. <span style="text-transform:none;font-weight:400;color:var(--muted)">(Vorschlag automatisch — überschreibbar)</span></div>
+    <input type="text" id="lnrIn" placeholder="wird nach Vorgangsart vorgeschlagen">
+    <div class="hlp">Fortlaufende Nummerierung der Beschlüsse (Satzung verlangt dies regelmäßig, vgl. § 19 Abs. 2 Mustersatzung). Vorstands- und GV-Beschlüsse werden getrennt gezählt. Die Nummer wird erst beim Download endgültig vergeben.</div>
+    <div class="lbl">Datum</div>
+    <input type="date" id="datumIn">
+    <div class="lbl">Sitzungs-/Beschlussform</div>
+    <select id="formatIn" onchange="onFormatChange()">
+      <option value="praesenz">Präsenzsitzung</option>
+      <option value="virtuell">Virtuelle Sitzung (Video)</option>
+      <option value="hybrid">Hybride Sitzung (Präsenz + zugeschaltet)</option>
+      <option value="schriftlich">Schriftliche / elektronische Beschlussfassung</option>
+    </select>
+    <div class="hlp" id="formatHlp">Bestimmt die Formulierung im Protokoll. Für virtuelle/hybride Vorstands-/AR-Sitzungen ist eine Satzungsgrundlage nötig (oben ankreuzen).</div>
+    <button class="gbtn" style="background:var(--surf2);color:var(--vst);border:1px solid var(--vst);margin-top:14px" onclick="pseudonymisiere()">🛡️ Klarnamen prüfen &amp; durch Platzhalter ersetzen</button>
+    <button class="gbtn" id="genBtn" onclick="generate()">✨ Entwurf formulieren &amp; anzeigen</button>
+    <div class="privacy">
+      <b>🔒 Datenschutz &amp; KI-Hinweis (DSGVO · EU AI Act Art. 50)</b>
+      Dieser Generator nutzt ein <b style="display:inline">KI-Sprachmodell</b>, um aus Ihren Stichpunkten Textbausteine zu formulieren. Ihre Eingaben werden dafür verarbeitet. Bitte beachten Sie:
+      <ul>
+        <li><b style="display:inline">Keine echten Personennamen</b> eingeben, wo ein Platzhalter genügt — z. B. „[Mitglied A]" statt des Klarnamens (Datenminimierung, Art. 5 DSGVO).</li>
+        <li>Möglichst <b style="display:inline">keine besonderen Kategorien</b> personenbezogener Daten (Gesundheit, etc.) im Klartext.</li>
+        <li>Der erzeugte Text ist ein <b style="display:inline">KI-gestützter Entwurf</b> und muss durch einen Menschen geprüft und verantwortet werden.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="result" id="genResult">
+    <div class="card">
+      <div class="verdict" id="verdict">
+        <div class="vtop"><span class="vico" id="vico"></span><span class="vtitle" id="vtitle"></span></div>
+        <div class="vmeta" id="vmeta"></div>
+      </div>
+      <div class="esc hide" id="escBox"><span class="ei">⚠️</span><div><b>Eskalation empfohlen</b><span id="escTxt"></span></div></div>
+      <div class="svote hide" id="svoteBox"><span class="ei">ⓘ</span><div><b>Stimmverbot beachten</b><span id="svoteTxt"></span></div></div>
+      <div class="hints">
+        <div class="hint warum"><h4>Warum sinnvoll?</h4><p id="hWarum"></p></div>
+        <div class="hint geng"><h4>GenG-Fundstelle</h4><p id="hGeng"></p></div>
+        <div class="hint foe fw"><h4>Bezug zum Förderzweck</h4><p id="hFoe"></p></div>
+        <div class="hint satz fw"><h4>Satzungs-Prüfpunkt</h4><p id="hSatz"></p></div>
+        <div class="hint esk fw"><h4>Wann zur Prüfung geben?</h4><p id="hEsk"></p></div>
+      </div>
+    </div>
+    <div class="card" id="docCard">
+      <h2>Entwurf</h2>
+      <div class="sub">Aus Ihren Stichpunkten formuliert. Platzhalter in <span style="color:var(--amber)">[…]</span> ersetzen. Wenn der Entwurf passt, unten als Dokument herunterladen.</div>
+      <div class="docstatus" id="docStatus"></div>
+      <div id="qsBox"></div>
+      <div class="doc">
+        <div class="dtabs" id="docTabs"></div>
+        <button class="copy" onclick="copyDoc()">Kopieren</button>
+        <pre id="docText"></pre>
+      </div>
+      <button class="gbtn dl" onclick="downloadDoc()">📄 Entwurf als Dokument generieren (Download)</button>
+    </div>
+    <div class="card"><div class="disc"><b>Wichtig:</b> Dies ist ein <b>Entwurf zur Arbeitserleichterung</b>, keine Rechtsberatung. Die rechtlichen Grundlagen wurden berücksichtigt, dennoch muss der Vorstand den Entwurf prüfen. Wir empfehlen dringend, das fertige Dokument vor Verwendung von einem <b>Anwalt, Juristen oder Steuerberater</b> final bestätigen zu lassen, um die Rechtssicherheit zu gewährleisten.</div></div>
+  </div>
+</div>
+
+<!-- ===== MODUS 2 ===== -->
+<div id="modePru" class="hide">
+  <div class="card">
+    <h2>Bestehenden Beschluss prüfen</h2>
+    <div class="sub">Formalkontrolle gegen die Pflichtbestandteile. Für jeden fehlenden Punkt erklärt das Tool, was fehlt, und schlägt einen Passus zum Einfügen vor.</div>
+    <div class="lbl">Um welchen Vorgang geht es?</div>
+    <select id="pruefFallSel"></select>
+    <div class="lbl">Beschlusstext einfügen</div>
+    <textarea id="pruefText" rows="7" placeholder="Beschlusstext einfügen — oder Beispiel laden."></textarea>
+    <button class="gbtn" onclick="pruefen()">Beschluss prüfen</button>
+    <div style="text-align:center;margin-top:10px"><a href="#" onclick="ladeBeispiel();return false;" style="color:var(--muted);font-size:11px">Beispiel-Beschluss laden</a></div>
+  </div>
+  <div class="result" id="pruResult">
+    <div class="card">
+      <h2>Prüfergebnis</h2>
+      <div class="score"><div class="sn" id="scoreNum"></div><div class="sl">Pflichtbestandteile erfüllt</div></div>
+      <div class="scoremsg" id="scoreMsg"></div>
+      <div class="ctxnote hide" id="ctxNote"></div>
+      <div class="checklist" id="checklist"></div>
+    </div>
+    <div class="card"><div class="disc"><b>Wichtig:</b> Strukturelle Formalkontrolle, keine inhaltliche Rechtsbewertung und keine Rechtsberatung. Vor Verwendung von Anwalt, Juristen oder Steuerberater bestätigen lassen. Die Wirksamkeit richtet sich nach Gesetz, Satzung und Rechtsprechung.</div></div>
+  </div>
+</div>
+</div>
+
+<script>
+const KAT=[
+  ["grundstueck","Grundstücke"],["beteiligung","Beteiligungen"],["vertrag_bedeutung","Verträge bes. Bedeutung"],
+  ["verband","Verbandsbeitritt/-austritt"],["prokura","Prokura"],["anteil_vorstand","Anteile Vorstand"],
+  ["kredit_vorstand","Kredit an Vorstand"],["darlehen","Darlehensaufnahme"],["investition","Investition"]
+];
+const DEFAULT={kat:["grundstueck","vertrag_bedeutung","verband","prokura","anteil_vorstand","kredit_vorstand"]};
+
+// ===== LAUFENDE NUMMER (localStorage, getrennte Zählkreise) =====
+const LNR_KEY="beschlussZaehler_v1";
+function lnrLoad(){try{return JSON.parse(localStorage.getItem(LNR_KEY))||{};}catch(e){return{};}}
+function lnrSave(o){try{localStorage.setItem(LNR_KEY,JSON.stringify(o));}catch(e){}}
+// kreis: "V" (Vorstand/Aktenvermerk) oder "GV" (Generalversammlung)
+function lnrPeek(kreis){
+  const jahr=(cur.dat||new Date().toISOString().slice(0,10)).slice(0,4);
+  const store=lnrLoad();const k=kreis+"-"+jahr;
+  const next=(store[k]||0)+1;
+  return jahr+"-"+kreis+"-"+String(next).padStart(3,"0");
+}
+function lnrCommit(kreis){
+  const jahr=(cur.dat||new Date().toISOString().slice(0,10)).slice(0,4);
+  const store=lnrLoad();const k=kreis+"-"+jahr;
+  store[k]=(store[k]||0)+1;lnrSave(store);
+  return jahr+"-"+kreis+"-"+String(store[k]).padStart(3,"0");
+}
+function kreisVon(res){return (res&&res.organ==="Generalversammlung")?"GV":"V";}
+
+const REGELN=[
+ {id:1,typ:"dienstleister",label:"Dienstleister beauftragen (Tagesgeschäft)",tor:5,geng:["§ 27 Abs. 1 GenG"],esk:"keine",betrag:false,
+  warum:"Das Beauftragen eines Dienstleisters gehört zum normalen Tagesgeschäft. Der Vorstand darf das eigenverantwortlich entscheiden, ohne die Generalversammlung zu fragen (§ 27 Abs. 1 GenG). Ein förmlicher Beschluss ist nicht nötig — zur eigenen Absicherung genügt ein kurzer interner Aktenvermerk, der festhält, was warum entschieden wurde.",
+  satz:"Schauen Sie in Ihre Satzung: Gibt es einen Zustimmungskatalog, der Verträge ab einer bestimmten Höhe der Generalversammlung vorbehält? Nur dann wäre hier eine Zustimmung nötig.",eskTxt:"In der Regel keine externe Prüfung nötig. Bei besonders teuren oder langfristigen Verträgen ist ein Aktenvermerk mit kurzer Begründung sinnvoll."},
+ {id:2,typ:"konto",label:"Geschäftskonto eröffnen",tor:5,geng:["§ 27 Abs. 1 GenG"],esk:"keine",betrag:false,
+  warum:"Ein Konto zu eröffnen ist Geschäftsführung — gesetzlich braucht es dafür keinen Beschluss (§ 27 Abs. 1 GenG). In der Praxis verlangen Banken aber oft einen schriftlichen Vorstandsbeschluss als Nachweis, wer die eG vertreten darf. Dafür können Sie den erzeugten Entwurf direkt nutzen.",
+  satz:"Prüfen Sie die Vertretungsregelung in Ihrer Satzung: Vertritt ein Vorstandsmitglied allein, oder müssen zwei gemeinsam unterschreiben? Die Bank richtet sich danach.",eskTxt:"Keine externe Prüfung nötig. Den Nachweis-Beschluss erstellen Sie am besten zusammen mit der Kontoeröffnung."},
+ {id:3,typ:"aufnahme",label:"Mitglied aufnehmen",tor:2,organ:"Vorstand",geng:["§ 15 GenG","§ 15a GenG"],esk:"keine",betrag:false,
+  warum:"Mit der Aufnahme entsteht eine neue Mitgliedschaft — das ist ein wichtiger Schritt und wird dokumentiert (§ 15 GenG). Üblicherweise entscheidet der Vorstand darüber. Das neue Mitglied unterschreibt eine Beitrittserklärung und wird in die Mitgliederliste eingetragen.",
+  satz:"Klären Sie anhand Ihrer Satzung, wer über die Aufnahme entscheidet (meist der Vorstand) und welcher Geschäftsanteil zu zeichnen und einzuzahlen ist. Bei Beitritt eines künftigen Vorstandsmitglieds entscheidet die Generalversammlung.",eskTxt:"Keine externe Prüfung nötig, solange Sie das Verfahren Ihrer Satzung einhalten."},
+ {id:4,typ:"ausschluss",label:"Mitglied ausschließen",tor:2,organ:"satzung",geng:["§ 68 GenG"],esk:"Anwalt empfohlen",betrag:false,rot:true,
+  warum:"Ein Ausschluss greift tief in die Rechte des betroffenen Mitglieds ein und wird vor Gericht häufig angefochten. Deshalb müssen Ausschlussgründe und Verfahren exakt eingehalten werden (§ 68 GenG): schriftliche Anhörung, klare Begründung, fristgerechte Mitteilung. Ein Formfehler macht den Ausschluss leicht angreifbar.",
+  satz:"In Ihrer Satzung MÜSSEN die Ausschlussgründe und das zuständige Organ stehen. Prüfen Sie genau die vorgeschriebene Anhörung des Mitglieds und die Mitteilungsfristen — hier passieren die meisten Fehler.",eskTxt:"Vor dem Ausspruch unbedingt anwaltlich prüfen lassen. Ausschlüsse werden vor Gericht oft erfolgreich angefochten, wenn das Verfahren nicht stimmt."},
+ {id:5,typ:"investition",label:"Investition (Schwelle wird geprüft)",geng:["§ 27 GenG","Satzung"],esk:"auto",betrag:true,schwelle:"invest",katKey:"investition",
+  warum:"Ob Sie für eine Investition einen Beschluss brauchen, hängt von der Betragsgrenze in Ihrer Satzung ab. Bleibt der Betrag darunter, ist es Geschäftsführung und der Vorstand entscheidet allein (§ 27 GenG). Liegt er darüber, muss die Generalversammlung (bzw. der Aufsichtsrat) zustimmen.",
+  satz:"Welche Investitionsgrenze nennt Ihre Satzung für den Vorstand? Genau dieser Wert entscheidet, ob hier ein Beschluss nötig ist. Tragen Sie ihn oben in den Angaben ein.",eskTxt:"Liegt der Betrag über der Satzungsgrenze, sollten Sie den Prüfungsverband einbinden — besonders bei größeren Anschaffungen."},
+ {id:6,typ:"miete",label:"Mietvertrag / Dauerschuldverhältnis",geng:["§ 27 GenG","Satzung"],esk:"keine",betrag:true,schwelle:"dauer",katKey:"vertrag_bedeutung",
+  warum:"Miet- und ähnliche Dauerverträge binden die eG oft über Jahre — deshalb behandeln viele Satzungen sie ab einer bestimmten Jahreshöhe als zustimmungspflichtig. Unter der Grenze entscheidet der Vorstand allein (§ 27 GenG), darüber braucht es die Zustimmung der Generalversammlung.",
+  satz:"Prüfen Sie, ob Ihr Zustimmungskatalog Dauerschuldverhältnisse erfasst — meist gemessen am Wert pro Jahr, nicht an der Gesamtsumme über die Laufzeit.",eskTxt:"Bei langer Laufzeit oder hohem Jahreswert empfiehlt sich die Einbindung des Prüfungsverbands."},
+ {id:7,typ:"darlehen",label:"Darlehensaufnahme",geng:["§ 27 GenG","Satzung"],esk:"Prüfverband empfohlen",betrag:true,schwelle:"darlehen",katKey:"darlehen",
+  warum:"Wenn die eG einen Kredit aufnimmt, steigt ihr Haftungsrisiko. Viele Satzungen verlangen deshalb ab einer bestimmten Höhe die Zustimmung der Generalversammlung. Unter der Grenze ist es Geschäftsführung (§ 27 GenG), darüber zustimmungspflichtig.",
+  satz:"Welche Kreditgrenze nennt Ihre Satzung für den Vorstand? Prüfen Sie auch, ob Bürgschaften und ähnliche Haftungserklärungen mitgemeint sind.",eskTxt:"Bei größeren Kreditsummen den Prüfungsverband einbinden — die Verschuldung der eG ist ein typischer Prüfungsschwerpunkt."},
+ {id:8,typ:"mitgliederdarlehen",label:"Mitgliederdarlehen annehmen",tor:2,organ:"Vorstand",geng:["§ 21b GenG"],esk:"Prüfverband empfohlen",betrag:false,rot:true,
+  warum:"Wenn Mitglieder der eG Geld leihen, ist das rechtlich heikel: § 21b GenG verlangt eine Nachrangabrede und einen klaren Mitgliederbezug, und der Vorstand muss die Rückzahlbarkeit laufend überwachen. Fehler hier sind ein klassischer Prüfungs- und Haftungsschwerpunkt.",
+  satz:"Stellen Sie sicher, dass eine wirksame Nachrangabrede vorliegt und die Darlehen ausschließlich von Mitgliedern stammen. Lassen Sie das vor Annahme vom Prüfungsverband bestätigen.",eskTxt:"Vor Annahme unbedingt den Prüfungsverband einbinden — Mitgliederdarlehen ohne korrekte Nachrangabrede können zu erheblichen Problemen führen."},
+ {id:9,typ:"kredit_vorstand",label:"Kredit an Vorstandsmitglied",tor:2,organ:"Generalversammlung",geng:["§ 49 GenG","Satzung"],esk:"Anwalt empfohlen",betrag:false,rot:true,stimmverbot:true,
+  warum:"Wenn die eG einem Vorstandsmitglied einen Kredit gewährt, besteht ein offensichtlicher Interessenkonflikt. Deshalb muss die Generalversammlung ausdrücklich zustimmen (§ 49 GenG) — und das betroffene Vorstandsmitglied darf bei dieser Abstimmung nicht mitstimmen.",
+  satz:"Das betroffene Vorstandsmitglied hat kein Stimmrecht (§ 43 Abs. 6 GenG). Dokumentieren Sie, dass die Konditionen marktüblich sind, damit kein verdeckter Vorteil entsteht.",eskTxt:"Wegen des Interessenkonflikts anwaltlich begleiten lassen. Hier entstehen schnell persönliche Haftungsrisiken für den Vorstand."},
+ {id:10,typ:"verbandswechsel",label:"Wechsel des Prüfungsverbands",tor:2,organ:"satzung",geng:["§ 54 Abs. 3 GenG","§ 54a GenG"],esk:"Prüfverband empfohlen",betrag:false,
+  warum:"Jede eG muss Mitglied in einem Prüfungsverband sein — das ist Pflicht. Beim Wechsel darf keine Lücke entstehen, in der die eG keinem Verband angehört (§ 54 Abs. 3 GenG), sonst drohen Probleme bis hin zur Eintragungssperre.",
+  satz:"Prüfen Sie, wer laut Satzung über den Wechsel entscheidet. Wichtig: Kündigung beim alten und Beitritt beim neuen Verband zeitlich so abstimmen, dass keine Lücke entsteht.",eskTxt:"Den Übergang mit beiden Verbänden abstimmen, damit die Pflichtmitgliedschaft lückenlos bleibt."},
+ {id:11,typ:"gv_einberufen",label:"Generalversammlung einberufen",tor:2,organ:"Vorstand",geng:["§ 44 GenG","§ 46 GenG"],esk:"keine",betrag:false,
+  warum:"Die Generalversammlung wird vom Vorstand einberufen (§ 44 GenG). Damit die dort gefassten Beschlüsse wirksam sind, müssen Frist und Form der Einladung genau stimmen (§ 46 GenG) — sonst sind alle Beschlüsse der Versammlung angreifbar.",
+  satz:"Halten Sie die Ladungsfrist und -form Ihrer Satzung ein (häufig mindestens zwei Wochen, in Textform). Die Tagesordnung muss mit der Einladung bekannt gemacht werden.",eskTxt:"Keine externe Prüfung nötig — aber Frist und Form unbedingt einhalten, das ist der häufigste Anfechtungsgrund."},
+ {id:12,typ:"anteil",label:"Übertragung Geschäftsguthaben",tor:2,organ:"Vorstand",geng:["§ 76 GenG"],esk:"keine",betrag:false,
+  warum:"Ein Mitglied kann sein Geschäftsguthaben auf ein anderes (künftiges) Mitglied übertragen und so ausscheiden, ohne dass es zu einer Auseinandersetzung kommt (§ 76 GenG). Die eG muss dem zustimmen und es dokumentieren.",
+  satz:"Prüfen Sie die Voraussetzungen in Ihrer Satzung. Wird das Guthaben durch ein Vorstandsmitglied übertragen, entscheidet die Generalversammlung statt des Vorstands.",eskTxt:"Keine externe Prüfung nötig, solange die Voraussetzungen der Satzung eingehalten sind."},
+ {id:13,typ:"prokura",label:"Prokura erteilen",tor:2,organ:"Vorstand",geng:["§ 42 GenG"],esk:"keine",betrag:false,katKey:"prokura",
+  warum:"Mit einer Prokura geben Sie einer Person weitreichende Vertretungsmacht für die eG. Das ist ein bedeutsamer Schritt und muss zum Genossenschaftsregister angemeldet werden (§ 42 GenG), damit sie nach außen wirksam ist.",
+  satz:"Steht Prokura in Ihrem Zustimmungskatalog, muss die Generalversammlung zustimmen. In jedem Fall: Anmeldung der Prokura beim Registergericht nicht vergessen.",eskTxt:"Keine externe Prüfung nötig — aber die Registeranmeldung ist Pflicht, sonst wirkt die Prokura nicht."},
+ {id:14,typ:"verguetung",label:"Vorstandsvergütung festlegen",tor:1,organ:"Generalversammlung",geng:["§ 9 Abs. 1 S. 3 GenG","§ 24 Abs. 3 GenG"],esk:"Anwalt empfohlen",betrag:false,rot:true,stimmverbot:true,
+  warum:"Über die Vergütung des Vorstands darf der Vorstand nicht selbst entscheiden — das wäre ein Entscheiden in eigener Sache. Ohne Aufsichtsrat entscheidet deshalb die Generalversammlung (§ 9 Abs. 1 S. 3, § 24 Abs. 3 GenG). Das betroffene Vorstandsmitglied stimmt dabei nicht mit.",
+  satz:"Das betroffene Vorstandsmitglied hat bei seiner eigenen Vergütung kein Stimmrecht (Selbstkontrahieren, § 43 Abs. 6 GenG). Die Höhe sollte angemessen und nachvollziehbar dokumentiert sein.",eskTxt:"Wegen des Interessenkonflikts und der Frage der Angemessenheit anwaltlich begleiten lassen."},
+ {id:15,typ:"satzungsaenderung",label:"Satzungsänderung",tor:1,organ:"Generalversammlung",geng:["§ 16 Abs. 1 GenG"],esk:"Prüfverband empfohlen",betrag:false,maj:"0,75",
+  warum:"Eine Satzungsänderung kann nur die Generalversammlung beschließen, und zwar mit einer Dreiviertelmehrheit der abgegebenen Stimmen (§ 16 Abs. 1 GenG). Wirksam wird sie erst, wenn sie ins Genossenschaftsregister eingetragen ist — bis dahin gilt die alte Satzung.",
+  satz:"Mindestens drei Viertel der abgegebenen Stimmen sind nötig (§ 16). Soll der Unternehmensgegenstand erweitert werden, kann sogar eine noch höhere Mehrheit erforderlich sein — das prüfen Sie in Ihrer Satzung.",eskTxt:"Vorher den Prüfungsverband anhören. Für die Eintragung ins Register sind Notar und Anmeldung erforderlich."},
+ {id:16,typ:"jahresabschluss",label:"Feststellung des Jahresabschlusses",tor:1,organ:"Generalversammlung",geng:["§ 48 Abs. 1 GenG"],esk:"keine",betrag:false,zwingend:true,
+  warum:"Den Jahresabschluss festzustellen ist allein Sache der Generalversammlung — das kann der Vorstand nicht übernehmen (§ 48 Abs. 1 GenG). Erst mit diesem Beschluss ist der Jahresabschluss wirksam festgestellt.",
+  satz:"Die Generalversammlung muss innerhalb von sechs Monaten nach Ende des Geschäftsjahres stattfinden. Halten Sie diese Frist im Blick — sie ist verbindlich.",eskTxt:"Keine externe Prüfung nötig — aber die Sechs-Monats-Frist unbedingt einhalten."},
+ {id:17,typ:"fahrzeug",label:"Fahrzeug anschaffen (Nutzung durch Mitglieder)",geng:["§ 27 GenG","§ 1 GenG (Förderzweck)","Satzung"],esk:"auto",betrag:true,schwelle:"invest",katKey:"investition",foerderfokus:true,
+  warum:"Die Anschaffung eines Fahrzeugs ist eine Investition. Ob ein Beschluss nötig ist, hängt von der Investitionsgrenze Ihrer Satzung ab. Wichtig ist hier zusätzlich: Wenn das Fahrzeug den Mitgliedern zugutekommt, sollten Sie den Förderbezug klar darstellen (§ 1 GenG) — also wie die Mitglieder konkret profitieren.",
+  satz:"Prüfen Sie die Investitionsgrenze Ihrer Satzung. Halten Sie zusätzlich fest, wie die Mitglieder das Fahrzeug nutzen dürfen und mit welchem Wert sie sich beteiligen (Nutzungs- und Beteiligungsregelung).",eskTxt:"Bei höherem Anschaffungswert den Prüfungsverband einbinden. Die steuerliche Behandlung (Förderzweck, geldwerter Vorteil) sollte ein Steuerberater würdigen."},
+ {id:18,typ:"objekt",label:"Objekt / Ferienwohnung anmieten",geng:["§ 27 GenG","Satzung"],esk:"keine",betrag:true,schwelle:"dauer",katKey:"vertrag_bedeutung",foerderfokus:true,
+  warum:"Die Anmietung eines Objekts ist ein Dauerschuldverhältnis und kann die eG länger binden. Kommt sie den Mitgliedern zugute (z. B. vergünstigte Nutzung), ist der Förderbezug darzustellen. Ob ein Beschluss nötig ist, richtet sich nach der Jahres-Wertgrenze Ihrer Satzung.",
+  satz:"Prüfen Sie, ob Ihr Zustimmungskatalog Dauerschuldverhältnisse nach Jahreswert erfasst. Stellen Sie dar, welchen konkreten Vorteil die Mitglieder durch die Anmietung erhalten (Mitgliederförderung).",eskTxt:"Bei langer Laufzeit oder hohem Jahreswert den Prüfungsverband einbinden."},
+ {id:19,typ:"foerdermassnahme",label:"Mitglieder-Fördermaßnahme / Projekt (z. B. Reise)",tor:5,geng:["§ 27 Abs. 1 GenG","§ 1 GenG"],esk:"keine",betrag:false,foerderfokus:true,
+  warum:"Eine Maßnahme, die unmittelbar dem Förderzweck dient (z. B. ein Projekt oder eine Reise für Mitglieder), gehört in der Regel zur Geschäftsführung — der Vorstand kann sie ohne förmlichen Beschluss umsetzen (§ 27 Abs. 1, § 1 GenG). Ein Aktenvermerk mit Förderbezug ist zur Dokumentation aber dringend zu empfehlen.",
+  satz:"Vergewissern Sie sich, dass die Maßnahme von Zweck und Gegenstand Ihrer Satzung gedeckt ist. Beschreiben Sie den Nutzen für die Mitglieder konkret.",eskTxt:"In der Regel keine externe Prüfung. Bei größerem Budget die Investitions-/Dauerschuldgrenze und Ihren Zustimmungskatalog prüfen."}
+];
+
+let PROFIL={};
+function num(id){const v=document.getElementById(id).value;return v===""?null:parseFloat(v);}
+function readProfile(){
+  PROFIL={
+    name:document.getElementById('pName').value||"[Name der eG]",
+    sitz:document.getElementById('pSitz').value||"[Sitz]",
+    foerder:document.getElementById('pFoerder').value.trim(),
+    mitglieder:num('pMitglieder'),vorstand:num('pVorstand')||1,anteil:num('pAnteil'),
+    ar:document.getElementById('pAR').checked,weisung:document.getElementById('pWeisung').checked,umlauf:document.getElementById('pUmlauf').checked,
+    digital:document.getElementById('pDigital').checked,investMitglieder:document.getElementById('pInvestMitglieder').checked,
+    invest:num('pInvest'),darlehen:num('pDarlehen'),dauer:num('pDauer'),
+    quorum:num('pQuorum'),maj:document.getElementById('pMaj').value||"0,75",
+    kat:[...document.querySelectorAll('.kchip.on')].map(c=>c.dataset.k)
+  };
+}
+function renderKat(){document.getElementById('katChips').innerHTML=KAT.map(([k,l])=>`<span class="kchip ${DEFAULT.kat.includes(k)?'on':''}" data-k="${k}" onclick="this.classList.toggle('on');validateLive()">${l}</span>`).join("");}
+function toggleProf(){document.getElementById('profBody').classList.toggle('hide');document.getElementById('profChev').classList.toggle('open');}
+
+// ===== EINGABE-PLAUSIBILITÄT =====
+function validateProfile(){
+  readProfile();const p=PROFIL;const errors=[],warnings=[],badFields=[];
+  // Mitglieder
+  if(p.mitglieder==null){errors.push({f:"pMitglieder",t:"Mitgliederzahl fehlt",d:"Bitte tragen Sie ein, wie viele Mitglieder Ihre Genossenschaft hat. Ohne diese Angabe kann das Tool die Zuständigkeit nicht bestimmen."});}
+  else if(p.mitglieder<0){errors.push({f:"pMitglieder",t:"Mitgliederzahl kann nicht negativ sein",d:"Eine negative Mitgliederzahl ist nicht möglich. Bitte korrigieren Sie den Wert."});}
+  else if(p.mitglieder===0){errors.push({f:"pMitglieder",t:"Eine eG ohne Mitglieder gibt es nicht",d:"Eine Genossenschaft muss Mitglieder haben — gesetzlich mindestens drei (§ 4 GenG)."});}
+  else if(p.mitglieder<3){warnings.push({f:"pMitglieder",t:`Nur ${p.mitglieder} Mitglied(er) — eine eG braucht mindestens 3`,d:"Nach § 4 GenG muss eine Genossenschaft mindestens drei Mitglieder haben. Vorübergehend (z. B. direkt nach Austritten) ist eine geringere Zahl zulässig, sie muss aber dem Prüfungsverband angezeigt und zügig wieder aufgefüllt werden. Bleibt sie dauerhaft unter drei, kann das Gericht die Auflösung anordnen (§ 80 GenG). Ist das so gewollt?"});}
+  if(p.mitglieder!=null&&p.mitglieder>20&&!p.ar){warnings.push({f:"pAR",t:"Mehr als 20 Mitglieder — Aufsichtsrat ist Pflicht",d:"Den Verzicht auf einen Aufsichtsrat erlaubt § 9 Abs. 1 GenG nur kleinen eGs mit höchstens 20 Mitgliedern. Bei mehr als 20 Mitgliedern muss ein Aufsichtsrat bestehen. Bitte Aufsichtsrat aktivieren oder die Mitgliederzahl prüfen."});}
+  // Vorstand
+  if(p.vorstand==null||p.vorstand<1){errors.push({f:"pVorstand",t:"Mindestens ein Vorstandsmitglied nötig",d:"Jede eG braucht einen Vorstand aus mindestens einer Person (§ 24 Abs. 2 S. 3 GenG)."});}
+  else if(p.mitglieder!=null&&p.mitglieder>0&&p.vorstand>p.mitglieder){warnings.push({f:"pVorstand",t:"Mehr Vorstandsmitglieder als Mitglieder",d:"Vorstandsmitglieder müssen zugleich Mitglieder der Genossenschaft sein (§ 9 Abs. 2 GenG). Es kann also nicht mehr Vorstandsmitglieder als Mitglieder geben. Bitte prüfen."});}
+  // Geschäftsanteil
+  if(p.anteil!=null&&p.anteil<0){errors.push({f:"pAnteil",t:"Geschäftsanteil kann nicht negativ sein",d:"Bitte einen positiven Betrag eintragen."});}
+  else if(p.anteil!=null&&p.anteil===0){warnings.push({f:"pAnteil",t:"Geschäftsanteil ist 0 €",d:"Ein Geschäftsanteil von 0 € ist unüblich — die Mitglieder beteiligen sich normalerweise mit einem festen Betrag am Kapital. Bitte prüfen."});}
+  // Schwellen negativ
+  [["pInvest",p.invest,"Investitionsgrenze"],["pDarlehen",p.darlehen,"Darlehensgrenze"],["pDauer",p.dauer,"Dauerschuldgrenze"]].forEach(([f,v,n])=>{
+    if(v!=null&&v<0)errors.push({f,t:n+" kann nicht negativ sein",d:"Bitte einen positiven Betrag eintragen oder das Feld leer lassen, wenn die Satzung keine Grenze nennt."});
+  });
+  // Quorum
+  if(p.quorum!=null&&p.quorum<0){errors.push({f:"pQuorum",t:"Beschlussfähigkeit kann nicht negativ sein",d:"Bitte korrigieren."});}
+  else if(p.quorum!=null&&p.mitglieder!=null&&p.mitglieder>0&&p.quorum>p.mitglieder){warnings.push({f:"pQuorum",t:"Beschlussfähigkeit verlangt mehr Mitglieder als vorhanden",d:`Sie haben ${p.mitglieder} Mitglied(er), aber die Versammlung soll erst ab ${p.quorum} beschlussfähig sein. So könnte nie eine wirksame Generalversammlung zustande kommen. Bitte anpassen.`});}
+  // Weisungsrecht
+  if(p.weisung&&p.mitglieder!=null&&p.mitglieder>20){warnings.push({f:"pWeisung",t:"Weisungsrecht nur bei höchstens 20 Mitgliedern",d:"Das Weisungsrecht der Generalversammlung gegenüber dem Vorstand ist nur bei kleinen eGs mit höchstens 20 Mitgliedern zulässig (§ 27 Abs. 2 GenG). Bei größeren eGs bitte deaktivieren."});}
+  errors.forEach(e=>badFields.push(e.f));
+  return {errors,warnings,badFields};
+}
+function renderValidation(v,target){
+  document.querySelectorAll('#profBody input,#profBody textarea').forEach(el=>el.classList.remove('bad'));
+  v.badFields.forEach(f=>{const el=document.getElementById(f);if(el)el.classList.add('bad');});
+  const all=[...v.errors.map(x=>({...x,cls:'err',ic:'✕'})),...v.warnings.map(x=>({...x,cls:'warn',ic:'!'}))];
+  target.innerHTML=all.map(x=>`<div class="valitem ${x.cls}"><span class="vi">${x.ic}</span><div><b>${x.t}</b>${x.d}</div></div>`).join("");
+}
+function validateLive(){renderValidation(validateProfile(),document.getElementById('profValidation'));}
+
+// ===== ENGINE (deterministisch) =====
+function resolve(regel,betrag){
+  readProfile();const p=PROFIL;
+  if(p.mitglieder==null)return{error:"Bitte Mitgliederzahl in den Angaben Ihrer Genossenschaft eintragen."};
+  const orgOrGV=o=>(o==="Aufsichtsrat"&&!p.ar)?"Generalversammlung":o;
+  const maj=regel.maj||null;
+  if(regel.zwingend||regel.tor===1)return{noetig:true,organ:"Generalversammlung",art:"GV-Beschluss",tor:1,esk:regel.esk,maj:maj};
+  const katHit=regel.katKey&&p.kat.includes(regel.katKey);
+  if(katHit)return{noetig:true,organ:orgOrGV("Aufsichtsrat"),art:"GV-Beschluss",tor:2,esk:regel.esk==="auto"?"Prüfverband empfohlen":regel.esk,note:"In Ihrem Zustimmungskatalog erfasst → Zustimmung erforderlich."};
+  if(regel.betrag){
+    const s=p[regel.schwelle];
+    if(s==null)return{noetig:false,organ:"Vorstand",art:"kein Beschluss",tor:5,esk:"keine",note:"Ihre Satzung nennt keine Betragsgrenze — der Vorstand entscheidet eigenverantwortlich. Aktenvermerk empfohlen."};
+    if(betrag>s)return{noetig:true,organ:orgOrGV("Aufsichtsrat"),art:"GV-Beschluss",tor:3,esk:regel.esk==="auto"?"Prüfverband empfohlen":regel.esk,note:`Betrag über Satzungsgrenze (${s.toLocaleString('de-DE')} €) → Zustimmung erforderlich.`};
+    return{noetig:false,organ:"Vorstand",art:"kein Beschluss",tor:5,esk:"keine",note:`Innerhalb der Satzungsgrenze (${s.toLocaleString('de-DE')} €) → Geschäftsführung.`};
+  }
+  if(regel.tor===2){const o=regel.organ==="satzung"?"Generalversammlung":orgOrGV(regel.organ);return{noetig:true,organ:o,art:o==="Generalversammlung"?"GV-Beschluss":"Vorstandsbeschluss",tor:2,esk:regel.esk,note:regel.organ==="satzung"?"Zuständiges Organ satzungsabhängig — Default GV angenommen.":null};}
+  if(p.weisung&&p.mitglieder<=20)return{noetig:false,organ:"Vorstand",art:"kein Beschluss",tor:5,esk:"keine",note:"Reine Geschäftsführung — die GV kann das Geschäft per Weisung an sich ziehen (§ 27 Abs. 2)."};
+  return{noetig:false,organ:"Vorstand",art:"kein Beschluss",tor:5,esk:"keine",note:"Reine Geschäftsführung. Bei Gesamtvertretung Aktenvermerk zur Doku empfohlen."};
+}
+
+// ===== DSGVO: NAMENS-ERKENNUNG, PSEUDONYMISIERUNG (Art. 25 — Privacy by Design) =====
+const NAME_RE=/\b(Herr|Frau|Hr\.|Fr\.)\s+[A-ZÄÖÜ][a-zäöüß]+(?:\s+[A-ZÄÖÜ][a-zäöüß]+)?|\b[A-ZÄÖÜ][a-zäöüß]+\s+[A-ZÄÖÜ][a-zäöüß]+\b/g;
+const NAME_STOP=/^(Die|Der|Das|Den|Dem|Des|Ein|Eine|Im|Am|Beim|Zur|Zum|Bei|Mit|Für|Von|Aus|Auf|Generalversammlung|Vorstand|Aufsichtsrat|Genossenschaft|Satzung|Beschluss|Mitglied|Mitglieder|Förderung|Anmietung|Investition|Darlehen|Kredit|Sitzung|Versammlung|Region|Objekt|Objekte|Förderzweck|Euro|GenG)\b/;
+function findeNamen(text){
+  const funde=[];let m;NAME_RE.lastIndex=0;
+  while((m=NAME_RE.exec(text))!==null){
+    const t=m[0].trim();
+    if(NAME_STOP.test(t))continue;
+    if(/\[/.test(t))continue;
+    if(!funde.includes(t))funde.push(t);
+  }
+  return funde;
+}
+function pseudonymisiere(){
+  const felder=["titelIn","substanceIn"];
+  let funde=[];
+  felder.forEach(id=>{findeNamen(document.getElementById(id).value).forEach(f=>{if(!funde.includes(f))funde.push(f);});});
+  if(!funde.length){alert("Keine offensichtlichen Klarnamen erkannt. Bitte prüfen Sie dennoch selbst, ob personenbezogene Daten enthalten sind.");return false;}
+  const ok=confirm("Mögliche Klarnamen / personenbezogene Angaben erkannt:\n\n"+funde.join("\n")+
+    "\n\nSollen diese durch neutrale Platzhalter ([Person A], [Person B] …) ersetzt werden?\nDie echten Namen setzen Sie anschließend im fertigen Dokument selbst wieder ein.");
+  if(!ok)return false;
+  const map={};let i=0;const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  funde.forEach(f=>{if(!map[f]){map[f]="[Person "+letters[i%26]+"]";i++;}});
+  felder.forEach(id=>{
+    let t=document.getElementById(id).value;
+    Object.keys(map).sort((a,b)=>b.length-a.length).forEach(f=>{t=t.split(f).join(map[f]);});
+    document.getElementById(id).value=t;
+  });
+  if(typeof validateLive==="function")validateLive();
+  return true;
+}
+
+// ===== KI-QUALITÄTSSICHERUNG: Halluzinations-/Zahlen-Check + Platzhalter =====
+function zahlenAus(text){
+  const bereinigt=(text||"")
+    .replace(/§\s*\d+[a-z]?(\s*Abs\.\s*\d+)?(\s*S\.\s*\d+)?/gi," ")
+    .replace(/\d{1,2}\.\d{1,2}\.\d{2,4}/g," ")
+    .replace(/\d{4}-\d{2}-\d{2}/g," ");
+  const set=new Set();
+  (bereinigt.match(/\d[\d.\,]*\d|\d{2,}/g)||[]).forEach(z=>{
+    const norm=z.replace(/\./g,"").replace(/,/g,".").replace(/\.0+$/,"");
+    if(norm.replace(/\D/g,"").length>=2)set.add(norm);
+  });
+  return set;
+}
+function kiQualitaet(){
+  const inText=[cur.titelRaw,cur.substanceRaw,cur.betrag!=null?String(cur.betrag):""].join(" ");
+  const outText=[cur.ueberschrift,cur.begruendung,cur.foerderzweck].join(" ");
+  const inZ=zahlenAus(inText), outZ=zahlenAus(outText);
+  const fremd=[...outZ].filter(z=>!inZ.has(z));
+  const ph=[...new Set((outText.match(/\[[^\]]+\]/g)||[]))];
+  return {fremd,ph};
+}
+function renderQS(){
+  const box=document.getElementById('qsBox');if(!box)return;
+  if(!cur.optimized){box.innerHTML="";return;}
+  const {fremd,ph}=kiQualitaet();
+  if(!fremd.length&&!ph.length){
+    box.innerHTML=`<div class="qsbox clean"><b>✓ KI-Qualitätscheck</b>Keine auffälligen Zahlen, keine offenen Platzhalter. Bitte den Inhalt dennoch selbst prüfen.</div>`;
+    return;
+  }
+  let h=`<div class="qsbox"><b>⚠ KI-Qualitätscheck — bitte prüfen</b>`;
+  if(fremd.length)h+=`<div>Folgende Zahlen stehen im Entwurf, aber nicht wörtlich in Ihrer Eingabe — bitte prüfen, ob sie korrekt sind (z. B. Rechenergebnisse der KI):<ul>${fremd.map(z=>`<li>${z}</li>`).join("")}</ul></div>`;
+  if(ph.length)h+=`<div style="margin-top:${fremd.length?'6px':'0'}">Noch offene Platzhalter, die Sie ersetzen sollten:<ul>${ph.map(p=>`<li>${p.replace(/</g,"&lt;")}</li>`).join("")}</ul></div>`;
+  h+=`</div>`;box.innerHTML=h;
+}
+
+// ===== KI-FORMULIERUNG =====
+async function optimizeText(){
+  const r=cur.r,res=cur.res;
+  const sys="Du bist ein Assistent, der Vorständen kleiner deutscher Genossenschaften (eG) hilft, aus stichpunktartigen Notizen saubere Textbausteine für einen Beschluss-Entwurf zu formulieren. Schreibe in klarer, sachlicher deutscher Verwaltungs- und Beschlusssprache, vollständige Sätze. Erfinde KEINE Fakten, Zahlen oder Sachverhalte, die nicht in der Eingabe stehen — fehlende konkrete Angaben kennzeichnest du mit eckigen Klammern als Platzhalter, z. B. [Anschaffungswert]. Gib KEINE Rechtsberatung und triff keine Aussagen über die Wirksamkeit. Antworte AUSSCHLIESSLICH mit einem JSON-Objekt, ohne Markdown, ohne Backticks, ohne Erklärung.";
+  const u=`Erstelle aus den folgenden Notizen die Textbausteine für einen Beschluss-Entwurf einer Genossenschaft.
+
+Art des Vorgangs: ${r.label}
+Zuständiges Organ: ${res.organ}
+Beschlussart: ${res.art}
+Einschlägige Vorschriften: ${r.geng.join(", ")}
+${cur.betrag?`Volumen: ${Number(cur.betrag).toLocaleString('de-DE')} €`:""}
+Hinterlegter Förderzweck der eG (§ 1 GenG): ${PROFIL.foerder||"nicht hinterlegt"}
+
+Notiz des Vorstands — Worum geht es (Überschrift):
+${cur.titelRaw||"(leer)"}
+
+Notiz des Vorstands — Sachverhalt/Begründung/Berechnung:
+${cur.substanceRaw||"(leer)"}
+
+Gib ein JSON mit GENAU diesen Feldern zurück:
+{"ueberschrift":"präzise, sachliche Überschrift des Beschlussgegenstands, 1 Satz, keine Stichpunktsprache","begruendung":"2 bis 5 vollständige Sätze in sachlicher Beschlusssprache, die Sachverhalt und Begründung darstellen; Zahlen/Berechnungen aus der Notiz übernehmen, fehlende konkrete Werte als [Platzhalter]","foerderzweck_bezug":"2 bis 4 Sätze, inwiefern die Maßnahme die Mitglieder fördert (Bezug zu § 1 GenG); an den hinterlegten Förderzweck anknüpfen, falls vorhanden; bei Investitionen zugunsten der Mitglieder Beteiligungs-/Nutzungslogik mit [Platzhaltern] für Werte"}`;
+
+  const resp=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:sys,messages:[{role:"user",content:u}]})
+  });
+  if(!resp.ok)throw new Error("API "+resp.status);
+  const data=await resp.json();
+  let txt=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").trim();
+  txt=txt.replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```$/,"").trim();
+  const j=JSON.parse(txt);
+  return {ueberschrift:(j.ueberschrift||"").trim(),begruendung:(j.begruendung||"").trim(),foerderzweck:(j.foerderzweck_bezug||"").trim()};
+}
+
+// ===== DOKUMENT =====
+function buildDoc(variante){
+  const p=PROFIL,r=cur.r,res=cur.res;const d=cur.dat||"[Datum]";
+  const subj=(cur.ueberschrift&&cur.ueberschrift.trim())?cur.ueberschrift.trim():(cur.titelRaw||"["+r.label+"]");
+  const begr=(cur.begruendung&&cur.begruendung.trim())?cur.begruendung.trim():(cur.substanceRaw||r.warum);
+  const foe=(cur.foerderzweck&&cur.foerderzweck.trim())?cur.foerderzweck.trim():(p.foerder||"[Darstellung, inwieweit die Maßnahme die Mitglieder fördert — ggf. mit Berechnung: Anschaffungs-/Neuwert, Beteiligungswert je Mitglied, Nutzungsentgelt]");
+  const organLang=res.organ==="Generalversammlung"?"Die Generalversammlung":"Der Vorstand";
+  const nr=(cur.lnr&&cur.lnr.trim())?cur.lnr.trim():"[Beschluss-Nr.]";
+  const aiFlag=cur.optimized?" · KI-gestützt formuliert (menschlich zu prüfen, Art. 50 EU AI Act)":"";
+  const kopf=`${p.name} · Sitz ${p.sitz} · GnR [Nr.], [Amtsgericht]\nBeschluss-Nr.: ${nr}${aiFlag}`;
+  const rg="Rechtsgrundlage: "+r.geng.join(", ");
+  const betragTxt=cur.betrag?` (Volumen: ${Number(cur.betrag).toLocaleString('de-DE')} €)`:"";
+  const us=Array.from({length:p.vorstand},(_,i)=>`[Vorstand ${i+1}]   ____________________`).join("\n");
+  const majLine=res.maj?`\nErforderliche Mehrheit: ${res.maj==="0,75"?"drei Viertel der abgegebenen Stimmen (§ 16 GenG)":res.maj}.`:"";
+  const foeBlock=`Bezug zum Förderzweck (§ 1 GenG):\n${foe}`;
+  const istGV=res.organ==="Generalversammlung";
+  // Sitzungsform — organabhängig verortet: GV → § 43b GenG; Vorstand/AR → Satzung/Geschäftsordnung
+  function formZeile(){
+    const f=cur.format||"praesenz";
+    if(f==="praesenz")return `Form der Sitzung: Präsenzsitzung in [Ort].`;
+    const grund=istGV?"§ 43b GenG":"den Bestimmungen der Satzung bzw. Geschäftsordnung";
+    if(f==="virtuell")return `Form der Sitzung: virtuelle Sitzung gemäß ${grund}. Es wird festgestellt, dass diese Form ${istGV?"zulässig ist":"durch die Satzung nicht ausgeschlossen und ausdrücklich zugelassen ist"} und die technischen Bedingungen die Teilnahme und Identifikation aller Berechtigten gewährleistet haben.`;
+    if(f==="hybrid")return `Form der Sitzung: hybride Sitzung (Präsenz und Zuschaltung) gemäß ${grund}. Die technischen Bedingungen haben Teilnahme und Identifikation aller Berechtigten gewährleistet.`;
+    return `Form der Beschlussfassung: schriftlich/elektronisch gemäß ${istGV?"§ 43b Abs. 2 GenG i. V. m. der Satzung":"der Satzung bzw. Geschäftsordnung"}. Abstimmungszeitraum: [Beginn] bis [Ende]; Zugangsweg der Stimmen: [z. B. elektronische Kommunikation].`;
+  }
+  const formBlock=`${formZeile()}`;
+  // § 8 Abs. 2 GenG — nur wenn investierende Mitglieder zugelassen und es ein GV-Beschluss ist
+  const investBlock=(p.investMitglieder&&istGV)
+    ? `\n\nFeststellung zu investierenden Mitgliedern (§ 8 Abs. 2 GenG):\nEs wird festgestellt, dass die Vorgaben des § 8 Abs. 2 GenG eingehalten wurden und investierende Mitglieder die nutzenden Mitglieder nicht überstimmt haben.`
+    : "";
+
+  if(variante==="aktenvermerk")
+    return `INTERNE GESCHÄFTSFÜHRUNGS-DOKUMENTATION (AKTENVERMERK)\n${kopf}\nDatum: ${d}\n\nGegenstand: ${subj}${betragTxt}\n\nEinordnung: Der Vorgang ist laufende Geschäftsführung (§ 27 Abs. 1 GenG); ein förmlicher Beschluss ist nicht erforderlich. Dieser Vermerk dient der internen Dokumentation und Haftungsvorsorge (§ 34 GenG).\n\nEntscheidung des Vorstands:\n${subj}.\n\nSachverhalt und Begründung:\n${begr}\n\n${foeBlock}\n\n${us}`;
+  if(variante==="umlauf"){
+    if(!p.umlauf)return "Schriftliche/elektronische Beschlussfassung laut Angaben nicht zugelassen — § 43b Abs. 2 GenG setzt eine entsprechende Satzungsgrundlage voraus. Bitte Ihre Satzung prüfen.";
+    return `BESCHLUSS IN SCHRIFTLICHER / ELEKTRONISCHER FORM\n(${istGV?"§ 43b Abs. 2 GenG i. V. m. der Satzung":"Satzung bzw. Geschäftsordnung"})\n${kopf}\nDatum: ${d}\n\n${formZeile()}\n\n${organLang} der ${p.name} beschließt:\n${subj}${betragTxt}.${majLine}\n\nSachverhalt und Begründung:\n${begr}\n\n${foeBlock}${investBlock}\n\n${rg}\n\nAbstimmungsergebnis: angenommen mit [__] Ja-, [__] Nein-Stimmen, [__] Enthaltungen.\n\nStimmabgaben der Beteiligten:\n${us}`;
+  }
+  if(variante==="auszug")
+    return `PROTOKOLLAUSZUG\n${kopf}\n\nAus dem Protokoll der ${res.organ} vom ${d}:\n\n${organLang} der ${p.name} beschließt:\n${subj}${betragTxt}.${majLine}\n\n${rg}\n\nDer Auszug stimmt mit dem Protokoll überein.\n[Versammlungsleiter]   ____________________`;
+  return `BESCHLUSS — ${res.art}\n${kopf}\n${res.organ}, Sitzung vom ${d}\n\nGegenstand: ${subj}\n\n${formBlock}\n\n${organLang} der ${p.name} beschließt:\n${subj}${betragTxt}.${majLine}\n\nSachverhalt und Begründung:\n${begr}\n\n${foeBlock}${investBlock}\n\n${rg}\n\nAbstimmungsergebnis: angenommen mit [__] Ja-, [__] Nein-Stimmen, [__] Enthaltungen.\n\nAnlagen: [ggf. Vertrag, Angebot, Berechnung, Mitgliederverzeichnis]\n\nUnterschriften:\n${us}`;
+}
+
+// ===== STATE / RENDER =====
+let cur={};
+function initSelects(){
+  const opts=REGELN.map(r=>`<option value="${r.id}">${r.label}</option>`).join("");
+  document.getElementById('fallSel').innerHTML=opts;
+  document.getElementById('pruefFallSel').innerHTML=opts;
+  document.getElementById('datumIn').value=new Date().toISOString().slice(0,10);
+  onFallChange();
+}
+function onFallChange(){const r=REGELN.find(x=>x.id===+document.getElementById('fallSel').value);document.getElementById('betragWrap').classList.toggle('show',!!r.betrag);}
+function onFormatChange(){
+  const f=document.getElementById('formatIn').value;const h=document.getElementById('formatHlp');
+  if(f==="virtuell"||f==="hybrid"){h.innerHTML="Für die <b>Generalversammlung</b> ist die digitale Form in § 43b GenG geregelt. Für <b>Vorstand/Aufsichtsrat</b> braucht es eine Grundlage in der Satzung/Geschäftsordnung — bitte oben ankreuzen.";}
+  else if(f==="schriftlich"){h.innerHTML="Schriftliche/elektronische Beschlussfassung nach § 43b Abs. 2 GenG (GV) bzw. laut Satzung (Vorstand/AR). Statt eines Sitzungsorts werden Abstimmungszeitraum und Zugangsweg dokumentiert.";}
+  else{h.textContent="Bestimmt die Formulierung im Protokoll. Für virtuelle/hybride Vorstands-/AR-Sitzungen ist eine Satzungsgrundlage nötig (oben ankreuzen).";}
+}
+function setMode(m){document.getElementById('bGen').classList.toggle('on',m==='gen');document.getElementById('bPru').classList.toggle('on',m==='pru');document.getElementById('modeGen').classList.toggle('hide',m!=='gen');document.getElementById('modePru').classList.toggle('hide',m!=='pru');}
+
+async function generate(){
+  const r=REGELN.find(x=>x.id===+document.getElementById('fallSel').value);
+  // Eingabe-Plausibilität prüfen
+  const v=validateProfile();
+  renderValidation(v,document.getElementById('profValidation'));
+  if(v.errors.length){
+    if(document.getElementById('profBody').classList.contains('hide'))toggleProf();
+    document.getElementById('profValidation').scrollIntoView({behavior:'smooth',block:'center'});
+    alert("Bitte korrigieren Sie zuerst die rot markierten Eingaben in den Angaben Ihrer Genossenschaft. Diese Werte sind so nicht möglich.");
+    return;
+  }
+  if(v.warnings.length && !confirmWarnings(v.warnings))return;
+  const betrag=r.betrag?parseFloat(document.getElementById('betragIn').value||0):null;
+  if(r.betrag&&(!betrag||betrag<=0)){alert("Bitte einen Betrag größer 0 eingeben.");return;}
+  // Datenminimierung (Art. 5/25 DSGVO): vor dem KI-Call auf Klarnamen prüfen
+  let namen=[];
+  ["titelIn","substanceIn"].forEach(id=>{findeNamen(document.getElementById(id).value).forEach(n=>{if(!namen.includes(n))namen.push(n);});});
+  if(namen.length){
+    const wahl=confirm("🔒 Datenschutz-Hinweis (DSGVO)\n\nIhre Eingabe enthält möglicherweise echte Personennamen:\n"+namen.join(", ")+
+      "\n\nFür die KI-Formulierung sollten Sie diese durch Platzhalter ersetzen (Datenminimierung).\n\n• OK = jetzt automatisch ersetzen (empfohlen)\n• Abbrechen = bewusst unverändert fortfahren");
+    if(wahl){ pseudonymisiere(); }
+  }
+  const res=resolve(r,betrag);
+  if(res.error){alert(res.error);return;}
+  // Sitzungsformat-Plausibilität: virtuelle/hybride Vorstands-/AR-Sitzung braucht Satzungsgrundlage
+  const format=document.getElementById('formatIn').value;
+  if((format==="virtuell"||format==="hybrid") && res.organ!=="Generalversammlung" && !PROFIL.digital){
+    const w=confirm("⚖️ Hinweis zur Sitzungsform\n\nSie haben eine "+(format==="virtuell"?"virtuelle":"hybride")+" Sitzung gewählt. Für Vorstands- und Aufsichtsratssitzungen gibt es KEINE pauschale gesetzliche Erlaubnis dafür — nötig ist eine Grundlage in Ihrer Satzung/Geschäftsordnung.\n\nIn den Angaben Ihrer Genossenschaft ist diese Grundlage nicht angekreuzt.\n\n• OK = trotzdem fortfahren (Sie bestätigen, dass die Grundlage besteht)\n• Abbrechen = anpassen (Präsenz wählen oder Grundlage ankreuzen)");
+    if(!w)return;
+  }
+  cur={r,res,betrag,format,
+    titelRaw:document.getElementById('titelIn').value,
+    substanceRaw:document.getElementById('substanceIn').value,
+    dat:document.getElementById('datumIn').value,
+    lnr:document.getElementById('lnrIn').value.trim(),
+    var:"sitzung",ueberschrift:"",begruendung:"",foerderzweck:"",optimized:false};
+  // Nummern-Vorschlag setzen, wenn der Nutzer keinen eigenen Wert eingetragen hat
+  if(!cur.lnr){cur.lnr=lnrPeek(kreisVon(res));document.getElementById('lnrIn').value=cur.lnr;}
+
+  // Verdikt + Hinweise (sofort, deterministisch)
+  const vb=document.getElementById('verdict');
+  vb.className="verdict "+(!res.noetig?"no":(res.organ==="Generalversammlung"?"gv":"yes"));
+  document.getElementById('vico').textContent=!res.noetig?"✓":(res.organ==="Generalversammlung"?"🏛️":"📋");
+  document.getElementById('vtitle').textContent=!res.noetig?"Kein förmlicher Beschluss nötig":"Beschluss erforderlich";
+  const ob=res.organ==="Generalversammlung"?"ob-gv":"ob-vst";
+  let meta=!res.noetig?`Dieser Vorgang ist <b>reine Geschäftsführung</b> — der Vorstand kann ihn ohne Beschluss umsetzen. Empfohlen wird ein Aktenvermerk zur Dokumentation. Zuständig: <span class="org-badge ${ob}">${res.organ}</span>`
+                      :`Zuständiges Organ: <span class="org-badge ${ob}">${res.organ}</span> · Beschlussart: <b>${res.art}</b>`;
+  if(res.maj)meta+=` · Mehrheit: <b>${res.maj==="0,75"?"¾":res.maj}</b>`;
+  if(PROFIL.quorum&&res.noetig&&res.organ==="Generalversammlung")meta+=`<br><span style="color:var(--muted)">Beschlussfähig ab ${PROFIL.quorum} Mitgliedern (Satzung).</span>`;
+  if(res.note)meta+=`<br><span style="color:var(--muted)">${res.note}</span>`;
+  document.getElementById('vmeta').innerHTML=meta;
+
+  const escBox=document.getElementById('escBox');
+  if(res.esk&&res.esk!=="keine"){escBox.classList.remove('hide');document.getElementById('escTxt').textContent=" "+r.eskTxt;}else escBox.classList.add('hide');
+  const sv=document.getElementById('svoteBox');
+  if(r.stimmverbot){sv.classList.remove('hide');document.getElementById('svoteTxt').textContent=" Betroffenes Vorstandsmitglied hat bei dieser Abstimmung kein Stimmrecht (§ 43 Abs. 6 GenG).";}else sv.classList.add('hide');
+
+  document.getElementById('hWarum').textContent=r.warum;
+  document.getElementById('hGeng').innerHTML=r.geng.map(x=>`<span class="geng-tag">${x}</span>`).join("");
+  document.getElementById('hFoe').textContent=PROFIL.foerder?("Im Entwurf wird Ihr Förderzweck als Bezug verwendet. "+(r.foerderfokus?"Bei dieser Maßnahme ist der Mitgliederbezug besonders wichtig — ggf. Berechnung (Wert, Beteiligung) ergänzen.":"")):"Kein Förderzweck hinterlegt — bitte oben eintragen, damit der Bezug im Beschluss erscheint (§ 1 GenG).";
+  document.getElementById('hSatz').textContent=r.satz;
+  document.getElementById('hEsk').textContent=r.eskTxt+" Wir empfehlen, den Entwurf von Anwalt, Juristen oder Steuerberater final bestätigen zu lassen.";
+
+  // Tabs
+  let tabs;
+  if(!res.noetig){tabs=[["aktenvermerk","Aktenvermerk"]];if(PROFIL.umlauf)tabs.push(["umlauf","Schriftl./elektr. Beschluss"]);}
+  else{tabs=[["sitzung","Sitzungsbeschluss"]];if(PROFIL.umlauf)tabs.push(["umlauf","Schriftl./elektr. Beschluss"]);tabs.push(["auszug","Protokollauszug"]);}
+  cur.var=tabs[0][0];
+  document.getElementById('docTabs').innerHTML=tabs.map((t,i)=>`<div class="dtab ${i===0?'on':''}" onclick="setVar('${t[0]}',this)">${t[1]}</div>`).join("");
+
+  document.getElementById('genResult').classList.add('show');
+  document.getElementById('genResult').scrollIntoView({behavior:'smooth',block:'start'});
+  renderDoc();
+
+  // KI-Formulierung
+  const btn=document.getElementById('genBtn');btn.disabled=true;
+  document.getElementById('qsBox').innerHTML="";
+  setStatus("opt",'<span class="spin"></span> Formuliere Entwurf aus Ihren Stichpunkten …');
+  try{
+    const out=await optimizeText();
+    cur.ueberschrift=out.ueberschrift;cur.begruendung=out.begruendung;cur.foerderzweck=out.foerderzweck;cur.optimized=true;
+    setStatus("ok",'✓ Entwurf KI-formuliert. <a onclick="reformulate()">Neu formulieren</a>');
+  }catch(e){
+    cur.optimized=false;
+    setStatus("warn",'⚠︎ Automatische Formulierung nicht erreichbar — Ihre Eingaben wurden als Rohtext übernommen. Bitte ausformulieren. <a onclick="reformulate()">Erneut versuchen</a>');
+  }
+  btn.disabled=false;
+  renderDoc();
+  renderQS();
+}
+function reformulate(){if(cur&&cur.r)generate();}
+function confirmWarnings(warnings){
+  const txt="Bitte bestätigen Sie die folgenden Hinweise, bevor der Entwurf erstellt wird:\n\n"
+    + warnings.map((w,i)=>`${i+1}. ${w.t}\n   ${w.d}`).join("\n\n")
+    + "\n\nMöchten Sie trotzdem fortfahren?";
+  return confirm(txt);
+}
+function setStatus(cls,html){const s=document.getElementById('docStatus');s.className="docstatus "+cls;s.innerHTML=html;}
+function setVar(v,el){cur.var=v;document.querySelectorAll('#docTabs .dtab').forEach(t=>t.classList.remove('on'));el.classList.add('on');renderDoc();}
+function renderDoc(){document.getElementById('docText').innerHTML=buildDoc(cur.var).replace(/\[([^\]]+)\]/g,'<span class="ph">[$1]</span>');}
+function copyDoc(){navigator.clipboard.writeText(buildDoc(cur.var)).then(()=>{const b=document.querySelector('.copy');const o=b.textContent;b.textContent="Kopiert ✓";setTimeout(()=>b.textContent=o,1400);});}
+async function downloadDoc(){
+  // Nummer erst jetzt verbindlich vergeben — sofern der Nutzer den Vorschlag nicht selbst überschrieben hat
+  const vorschlag=lnrPeek(kreisVon(cur.res));
+  if(!cur.lnr || cur.lnr===vorschlag){
+    cur.lnr=lnrCommit(kreisVon(cur.res));
+    const f=document.getElementById('lnrIn');if(f)f.value=cur.lnr;
+    renderDoc();
+  }
+  const head=(cur.optimized
+    ? "ENTWURF — KI-GESTÜTZT FORMULIERT.\nDieser Text wurde mithilfe eines KI-Sprachmodells erstellt und ist vom Vorstand inhaltlich zu prüfen\nund zu verantworten (redaktionelle Verantwortung, Art. 50 EU AI Act). Vor Verwendung von\nAnwalt, Jurist oder Steuerberater final bestätigen lassen.\n"
+    : "ENTWURF — bitte vom Vorstand prüfen und von Anwalt/Jurist/Steuerberater final bestätigen lassen.\n"
+    )+"=".repeat(70)+"\n\n";
+  const klartext=head+buildDoc(cur.var);
+  // Integritäts-Prüfsumme (SHA-256) über den Protokollinhalt — Manipulations-ERKENNUNG, keine Signatur
+  let hash="";
+  try{
+    const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(klartext));
+    hash=[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+  }catch(e){hash="(in dieser Umgebung nicht verfügbar)";}
+  const fuss=`\n\n${"=".repeat(70)}\nIntegritäts-Prüfsumme (SHA-256) über den vorstehenden Inhalt:\n${hash}\nHinweis: Diese Prüfsumme dient ausschließlich der Erkennung nachträglicher Änderungen. Sie ist KEINE elektronische Signatur und kein Zeitstempel im Sinne der eIDAS-Verordnung (kein Nachweis von Urheber oder Zeitpunkt).`;
+  const full=klartext+fuss;
+  const body=full.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  // Maschinenlesbare KI-Kennzeichnung (Art. 50 Abs. 2 EU AI Act; finales EU-Format folgt mit Code of Practice 2026)
+  const aiMeta=cur.optimized
+    ? '<meta name="ai-generated" content="true"><meta name="ai-generator" content="GenG-Beschlussgenerator"><meta name="ai-human-reviewed" content="required"><!-- ai-generated-content: true; human-review: required; tool: GenG-Beschlussgenerator -->'
+    : '';
+  const html=`<html><head><meta charset="utf-8">${aiMeta}<meta name="content-sha256" content="${hash}"></head><body><pre style="font-family:Calibri,Arial,sans-serif;font-size:11pt;white-space:pre-wrap">${body}</pre></body></html>`;
+  const blob=new Blob([html],{type:"application/msword"});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  const t=((cur.ueberschrift||cur.titelRaw||cur.r.label)).replace(/[^\wäöüÄÖÜß ]/g,"").trim().slice(0,40).replace(/\s+/g,"_")||"Beschluss-Entwurf";
+  a.download="Beschluss_"+cur.lnr+"_"+t+".doc";a.click();
+}
+
+// ===== PRÜFER =====
+const PFLICHT=[
+  {key:"organ",label:"Beschlussfassendes Organ benannt",re:/(vorstand|generalversammlung|aufsichtsrat)/i,
+   expl:"Im Beschluss muss klar stehen, welches Organ entschieden hat — Vorstand oder Generalversammlung.",
+   passus:r=>{const e=expectedOrgan(r);return `${e==='Vorstand'?'Der Vorstand':'Die Generalversammlung'} der [Name der eG] beschließt: [konkreter Beschlussinhalt].`;}},
+  {key:"tenor",label:"Beschlusstenor ('… beschließt:')",re:/beschlie(ß|ss)t|beschluss/i,nurBeschluss:true,
+   expl:"Der eigentliche Beschlusssatz fehlt. Er beginnt mit „… beschließt:“ und nennt klar, was entschieden wird.",
+   passus:r=>`Die [Organ] der [Name der eG] beschließt:\n[konkreter, vollständiger Beschlussinhalt].`},
+  {key:"datum",label:"Datum der Beschlussfassung",re:/\d{1,2}\.\s?\d{1,2}\.\s?\d{2,4}|\d{4}-\d{2}-\d{2}|datum/i,
+   expl:"Das Datum fehlt. Es ist für Fristen (z. B. 6-Monats-Frist beim Jahresabschluss) und als Nachweis nötig.",
+   passus:r=>`Sitzung / Beschlussfassung vom [TT.MM.JJJJ] in [Ort].`},
+  {key:"eg",label:"Name der Genossenschaft",re:/\beG\b|genossenschaft/i,
+   expl:"Der Name der Genossenschaft fehlt im Kopf des Beschlusses.",
+   passus:r=>`[Name der eG], Sitz [Ort], eingetragen im Genossenschaftsregister GnR [Nr.] beim Amtsgericht [Ort].`},
+  {key:"unterschrift",label:"Unterschriftenblock",re:/unterschrift|____|gez\./i,
+   expl:"Ein Unterschriftenblock der Beschließenden fehlt. Beschlüsse sind zu Beweiszwecken zu unterzeichnen.",
+   passus:r=>`[Vorstand 1]   ____________________\n[Vorstand 2]   ____________________`},
+  {key:"rechtsgrund",label:"Rechtsgrundlage / GenG-Bezug",re:/§\s?\d+|geng/i,
+   expl:"Der Bezug zur Rechtsgrundlage fehlt. Er macht nachvollziehbar, worauf der Beschluss gestützt ist.",
+   passus:r=>`Rechtsgrundlage: ${r.geng.join(", ")}.`}
+  ,{key:"lnr",label:"Fortlaufende Beschluss-Nr.",re:/\b(beschluss[-\s]?nr|nr\.?\s*\d|\d{4}[-\/]\d{1,3}|\d{4}-(gv|v)-\d)/i,
+   expl:"Eine fortlaufende Beschluss-Nummer fehlt. Satzungen verlangen regelmäßig eine fortlaufende Nummerierung der Beschlüsse zu Beweiszwecken (vgl. § 19 Abs. 2 Mustersatzung). Sie sichert die lückenlose Ablage.",
+   passus:r=>`Beschluss-Nr.: [JJJJ]-${expectedOrgan(r)==="Generalversammlung"?"GV":"V"}-[lfd. Nr.]`},
+  {key:"ergebnis",label:"Feststellung des Abstimmungsergebnisses",re:/(angenommen|abgelehnt|einstimmig|ja-?stimmen|mit\s+\d+\s+stimmen|gegenstimmen|enthaltung)/i,nurBeschluss:true,
+   expl:"Die ausdrückliche Feststellung des Abstimmungsergebnisses fehlt. Formulierungen wie „fand Zustimmung“ genügen rechtlich nicht — erforderlich ist die klare Feststellung, ob der Beschluss angenommen oder abgelehnt wurde, mit Stimmenverhältnis. Dies ist ein häufiger Anfechtungs- und Beanstandungsgrund.",
+   passus:r=>`Abstimmungsergebnis: Der Beschluss wurde mit [__] Ja-Stimmen, [__] Nein-Stimmen und [__] Enthaltungen angenommen.\n(Behandlung von Enthaltungen gemäß Satzung beachten.)`}
+];
+function expectedOrgan(r){const res=resolve(r,r.betrag?9999999:null);return res.error?"Generalversammlung":(res.noetig?res.organ:"Vorstand");}
+function ladeBeispiel(){
+  readProfile();
+  document.getElementById('pruefText').value=
+`BESCHLUSS DER GENERALVERSAMMLUNG
+${PROFIL.name&&PROFIL.name!=="[Name der eG]"?PROFIL.name:"Muster eG"}
+
+Die Generalversammlung beschließt die Feststellung des Jahresabschlusses
+zum 31.12.2025, bestehend aus Bilanz und Gewinn- und Verlustrechnung.
+
+Der Vorstand wird beauftragt, die erforderlichen Maßnahmen zu ergreifen.`;
+}
+function pruefen(){
+  const txt=document.getElementById('pruefText').value.trim();
+  if(!txt){alert("Bitte Beschlusstext einfügen oder Beispiel laden.");return;}
+  readProfile();
+  const r=REGELN.find(x=>x.id===+document.getElementById('pruefFallSel').value);
+  const istBeschluss=resolve(r,r.betrag?9999999:null).noetig; // true=Beschluss, false=Geschäftsführung/Aktenvermerk
+  const exp=expectedOrgan(r);
+  // Kontext-Hinweis
+  const ctx=document.getElementById('ctxNote');
+  if(!istBeschluss){
+    ctx.classList.remove('hide');
+    ctx.innerHTML=`<b>Geprüft als: interne Geschäftsführungs-Dokumentation (Aktenvermerk).</b> Dieser Vorgang ist laufende Geschäftsführung (§ 27 Abs. 1 GenG) — es findet keine Abstimmung statt. Daher werden „Beschlusstenor" und „Abstimmungsergebnis" hier nicht verlangt.`;
+  }else{
+    ctx.classList.remove('hide');
+    ctx.innerHTML=`<b>Geprüft als: ${exp==="Generalversammlung"?"Beschluss der Generalversammlung":"Vorstandsbeschluss"}.</b> Es werden alle Pflichtbestandteile eines förmlichen Beschlusses geprüft.`;
+  }
+  // Nur kontextpassende Pflichtbausteine
+  const aktiv=PFLICHT.filter(it=>!(it.nurBeschluss&&!istBeschluss));
+  let ok=0,missing=0;const items=[];
+  aktiv.forEach(it=>{const f=it.re.test(txt);if(f)ok++;else missing++;items.push({status:f?"ok":"miss",label:it.label,expl:f?null:it.expl,passus:f?null:it.passus(r)});});
+  // Plausibilität: erwartetes Organ
+  if(istBeschluss&&!txt.toLowerCase().includes(exp.toLowerCase()))
+    items.push({status:"warn",label:`Plausibilität: erwartetes Organ ist '${exp}'`,expl:`Für „${r.label}“ ist nach GenG/Ihren Angaben ${exp} zuständig. Prüfen Sie, ob das im Beschluss korrekt benannt ist.`,passus:null});
+  // Inhaltliche Prüfung: Satzungsänderung verlangt mind. drei Viertel
+  if(r.maj==="0,75"){
+    const hatDreiViertel=/(drei\s*viertel|3\/4|¾|75\s*%)/i.test(txt);
+    const hatEinfache=/einfache(r|n)?\s+mehrheit/i.test(txt);
+    if(hatEinfache&&!hatDreiViertel)
+      items.push({status:"warn",label:"Mehrheit zu niedrig angegeben",expl:"Der Text nennt eine einfache Mehrheit. Eine Satzungsänderung erfordert jedoch mindestens drei Viertel der abgegebenen Stimmen (§ 16 Abs. 1 GenG).",passus:r=>null});
+    else if(!hatDreiViertel)
+      items.push({status:"warn",label:"Erforderliche ¾-Mehrheit nicht ausdrücklich genannt",expl:"Bei einer Satzungsänderung sollte die erreichte Mehrheit ausdrücklich als mindestens drei Viertel der abgegebenen Stimmen festgehalten werden (§ 16 Abs. 1 GenG).",passus:null});
+  }
+  if(r.rot)items.push({status:"warn",label:"Rote Linie — externe Prüfung nötig",expl:r.eskTxt,passus:null});
+  if(r.stimmverbot)items.push({status:"warn",label:"Stimmverbot prüfen (§ 43 Abs. 6 GenG)",expl:"Das betroffene Organmitglied darf bei diesem Punkt nicht mitstimmen. Bitte im Protokoll dokumentieren.",passus:null});
+  document.getElementById('scoreNum').textContent=ok+"/"+aktiv.length;
+  document.getElementById('scoreMsg').textContent=missing===0?"Alle relevanten Pflichtbestandteile vorhanden. Bitte Inhalt dennoch prüfen lassen.":`Es fehlen ${missing} Pflichtangabe(n). Unten sehen Sie, was fehlt und welcher Passus ergänzt werden sollte.`;
+  document.getElementById('checklist').innerHTML=items.map(it=>{
+    const m=it.status==="ok"?"cl-ok":(it.status==="warn"?"cl-warn":"cl-miss");
+    const s=it.status==="ok"?"✓":(it.status==="warn"?"!":"✕");
+    let h=`<div class="cl-item"><div class="cl-head"><div class="cl-mark ${m}">${s}</div><div class="cl-txt">${it.label}</div></div>`;
+    if(it.expl)h+=`<div class="cl-expl">${it.expl}</div>`;
+    if(it.passus&&typeof it.passus==="function"){const pv=it.passus(r);if(pv)h+=`<div class="passus"><span class="pcopy" onclick="copyPassus(this)">kopieren</span><div class="pl">Empfohlener Passus zum Einfügen</div><pre>${pv.replace(/</g,"&lt;")}</pre></div>`;}
+    return h+`</div>`;
+  }).join("");
+  document.getElementById('pruResult').classList.add('show');
+  document.getElementById('pruResult').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function copyPassus(el){const t=el.parentElement.querySelector('pre').innerText;navigator.clipboard.writeText(t).then(()=>{const o=el.textContent;el.textContent="kopiert ✓";setTimeout(()=>el.textContent=o,1300);});}
+
+renderKat();
+readProfile();
+initSelects();
+onFormatChange();
+document.querySelectorAll('#profBody input,#profBody textarea').forEach(el=>el.addEventListener('input',validateLive));
+validateLive();
+</script>
+</body>
+</html>
