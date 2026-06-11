@@ -1,0 +1,154 @@
+{
+  "meta": {
+    "version": "2026-06",
+    "stand": "GenG, Stand Juni 2026 · extrahiert aus Prototyp V8.1/V8.2",
+    "review_status": "offen – juristische Abnahme durch Prüfungsverband/Anwalt ausstehend (siehe docs/01-pruefbericht.md, Abschnitt C)",
+    "hinweis": "Diese Wissensbasis ist die fachliche Grundlage der deterministischen Regel-Engine. Änderungen nur mit Quellenangabe und neuem Stand. Keine Rechtsberatung.",
+    "felder": {
+      "tor": "1 = zwingend GV · 2 = Beschluss durch benanntes Organ · 5 = Geschäftsführung (kein Beschluss nötig)",
+      "esk": "Eskalationsempfehlung: keine | auto | Prüfverband empfohlen | Anwalt empfohlen",
+      "schwelle": "Profilfeld der Satzungs-Betragsgrenze: invest | darlehen | dauer",
+      "katKey": "Schlüssel im Zustimmungskatalog der Satzung",
+      "rot": "rote Linie – externe Prüfung dringend",
+      "stimmverbot": "Stimmverbot des betroffenen Organmitglieds beachten"
+    }
+  },
+  "regeln": [
+    {
+      "id": 1, "typ": "dienstleister", "label": "Dienstleister beauftragen (Tagesgeschäft)",
+      "tor": 5, "geng": ["§ 27 Abs. 1 GenG"], "esk": "keine", "betrag": false,
+      "warum": "Das Beauftragen eines Dienstleisters gehört zum normalen Tagesgeschäft. Der Vorstand darf das eigenverantwortlich entscheiden, ohne die Generalversammlung zu fragen (§ 27 Abs. 1 GenG). Ein förmlicher Beschluss ist nicht nötig — zur eigenen Absicherung genügt ein kurzer interner Aktenvermerk, der festhält, was warum entschieden wurde.",
+      "satz": "Schauen Sie in Ihre Satzung: Gibt es einen Zustimmungskatalog, der Verträge ab einer bestimmten Höhe der Generalversammlung vorbehält? Nur dann wäre hier eine Zustimmung nötig.",
+      "eskTxt": "In der Regel keine externe Prüfung nötig. Bei besonders teuren oder langfristigen Verträgen ist ein Aktenvermerk mit kurzer Begründung sinnvoll."
+    },
+    {
+      "id": 2, "typ": "konto", "label": "Geschäftskonto eröffnen",
+      "tor": 5, "geng": ["§ 27 Abs. 1 GenG"], "esk": "keine", "betrag": false,
+      "warum": "Ein Konto zu eröffnen ist Geschäftsführung — gesetzlich braucht es dafür keinen Beschluss (§ 27 Abs. 1 GenG). In der Praxis verlangen Banken aber oft einen schriftlichen Vorstandsbeschluss als Nachweis, wer die eG vertreten darf. Dafür können Sie den erzeugten Entwurf direkt nutzen.",
+      "satz": "Prüfen Sie die Vertretungsregelung in Ihrer Satzung: Vertritt ein Vorstandsmitglied allein, oder müssen zwei gemeinsam unterschreiben? Die Bank richtet sich danach.",
+      "eskTxt": "Keine externe Prüfung nötig. Den Nachweis-Beschluss erstellen Sie am besten zusammen mit der Kontoeröffnung."
+    },
+    {
+      "id": 3, "typ": "aufnahme", "label": "Mitglied aufnehmen",
+      "tor": 2, "organ": "Vorstand", "geng": ["§ 15 GenG", "§ 15a GenG"], "esk": "keine", "betrag": false,
+      "warum": "Mit der Aufnahme entsteht eine neue Mitgliedschaft — das ist ein wichtiger Schritt und wird dokumentiert (§ 15 GenG). Üblicherweise entscheidet der Vorstand darüber. Das neue Mitglied unterschreibt eine Beitrittserklärung und wird in die Mitgliederliste eingetragen.",
+      "satz": "Klären Sie anhand Ihrer Satzung, wer über die Aufnahme entscheidet (meist der Vorstand) und welcher Geschäftsanteil zu zeichnen und einzuzahlen ist. Bei Beitritt eines künftigen Vorstandsmitglieds entscheidet die Generalversammlung.",
+      "eskTxt": "Keine externe Prüfung nötig, solange Sie das Verfahren Ihrer Satzung einhalten."
+    },
+    {
+      "id": 4, "typ": "ausschluss", "label": "Mitglied ausschließen",
+      "tor": 2, "organ": "satzung", "geng": ["§ 68 GenG"], "esk": "Anwalt empfohlen", "betrag": false, "rot": true,
+      "warum": "Ein Ausschluss greift tief in die Rechte des betroffenen Mitglieds ein und wird vor Gericht häufig angefochten. Deshalb müssen Ausschlussgründe und Verfahren exakt eingehalten werden (§ 68 GenG): schriftliche Anhörung, klare Begründung, fristgerechte Mitteilung. Ein Formfehler macht den Ausschluss leicht angreifbar.",
+      "satz": "In Ihrer Satzung MÜSSEN die Ausschlussgründe und das zuständige Organ stehen. Prüfen Sie genau die vorgeschriebene Anhörung des Mitglieds und die Mitteilungsfristen — hier passieren die meisten Fehler.",
+      "eskTxt": "Vor dem Ausspruch unbedingt anwaltlich prüfen lassen. Ausschlüsse werden vor Gericht oft erfolgreich angefochten, wenn das Verfahren nicht stimmt."
+    },
+    {
+      "id": 5, "typ": "investition", "label": "Investition (Schwelle wird geprüft)",
+      "geng": ["§ 27 GenG", "Satzung"], "esk": "auto", "betrag": true, "schwelle": "invest", "katKey": "investition",
+      "warum": "Ob Sie für eine Investition einen Beschluss brauchen, hängt von der Betragsgrenze in Ihrer Satzung ab. Bleibt der Betrag darunter, ist es Geschäftsführung und der Vorstand entscheidet allein (§ 27 GenG). Liegt er darüber, muss die Generalversammlung (bzw. der Aufsichtsrat) zustimmen.",
+      "satz": "Welche Investitionsgrenze nennt Ihre Satzung für den Vorstand? Genau dieser Wert entscheidet, ob hier ein Beschluss nötig ist. Tragen Sie ihn oben in den Angaben ein.",
+      "eskTxt": "Liegt der Betrag über der Satzungsgrenze, sollten Sie den Prüfungsverband einbinden — besonders bei größeren Anschaffungen."
+    },
+    {
+      "id": 6, "typ": "miete", "label": "Mietvertrag / Dauerschuldverhältnis",
+      "geng": ["§ 27 GenG", "Satzung"], "esk": "keine", "betrag": true, "schwelle": "dauer", "katKey": "vertrag_bedeutung",
+      "warum": "Miet- und ähnliche Dauerverträge binden die eG oft über Jahre — deshalb behandeln viele Satzungen sie ab einer bestimmten Jahreshöhe als zustimmungspflichtig. Unter der Grenze entscheidet der Vorstand allein (§ 27 GenG), darüber braucht es die Zustimmung der Generalversammlung.",
+      "satz": "Prüfen Sie, ob Ihr Zustimmungskatalog Dauerschuldverhältnisse erfasst — meist gemessen am Wert pro Jahr, nicht an der Gesamtsumme über die Laufzeit.",
+      "eskTxt": "Bei langer Laufzeit oder hohem Jahreswert empfiehlt sich die Einbindung des Prüfungsverbands."
+    },
+    {
+      "id": 7, "typ": "darlehen", "label": "Darlehensaufnahme",
+      "geng": ["§ 27 GenG", "Satzung"], "esk": "Prüfverband empfohlen", "betrag": true, "schwelle": "darlehen", "katKey": "darlehen",
+      "warum": "Wenn die eG einen Kredit aufnimmt, steigt ihr Haftungsrisiko. Viele Satzungen verlangen deshalb ab einer bestimmten Höhe die Zustimmung der Generalversammlung. Unter der Grenze ist es Geschäftsführung (§ 27 GenG), darüber zustimmungspflichtig.",
+      "satz": "Welche Kreditgrenze nennt Ihre Satzung für den Vorstand? Prüfen Sie auch, ob Bürgschaften und ähnliche Haftungserklärungen mitgemeint sind.",
+      "eskTxt": "Bei größeren Kreditsummen den Prüfungsverband einbinden — die Verschuldung der eG ist ein typischer Prüfungsschwerpunkt."
+    },
+    {
+      "id": 8, "typ": "mitgliederdarlehen", "label": "Mitgliederdarlehen annehmen",
+      "tor": 2, "organ": "Vorstand", "geng": ["§ 21b GenG"], "esk": "Prüfverband empfohlen", "betrag": false, "rot": true,
+      "warum": "Wenn Mitglieder der eG Geld leihen, ist das rechtlich heikel: § 21b GenG verlangt eine Nachrangabrede und einen klaren Mitgliederbezug, und der Vorstand muss die Rückzahlbarkeit laufend überwachen. Fehler hier sind ein klassischer Prüfungs- und Haftungsschwerpunkt.",
+      "satz": "Stellen Sie sicher, dass eine wirksame Nachrangabrede vorliegt und die Darlehen ausschließlich von Mitgliedern stammen. Lassen Sie das vor Annahme vom Prüfungsverband bestätigen.",
+      "eskTxt": "Vor Annahme unbedingt den Prüfungsverband einbinden — Mitgliederdarlehen ohne korrekte Nachrangabrede können zu erheblichen Problemen führen."
+    },
+    {
+      "id": 9, "typ": "kredit_vorstand", "label": "Kredit an Vorstandsmitglied",
+      "tor": 2, "organ": "Generalversammlung", "geng": ["§ 49 GenG", "Satzung"], "esk": "Anwalt empfohlen", "betrag": false, "rot": true, "stimmverbot": true,
+      "pruefhinweis": "Audit C2: Stimmverbots-Zitat (§ 43 Abs. 6 GenG) juristisch gegenprüfen; Begriff 'Selbstkontrahieren' stammt aus § 181 BGB.",
+      "warum": "Wenn die eG einem Vorstandsmitglied einen Kredit gewährt, besteht ein offensichtlicher Interessenkonflikt. Deshalb muss die Generalversammlung ausdrücklich zustimmen (§ 49 GenG) — und das betroffene Vorstandsmitglied darf bei dieser Abstimmung nicht mitstimmen.",
+      "satz": "Das betroffene Vorstandsmitglied hat kein Stimmrecht (§ 43 Abs. 6 GenG). Dokumentieren Sie, dass die Konditionen marktüblich sind, damit kein verdeckter Vorteil entsteht.",
+      "eskTxt": "Wegen des Interessenkonflikts anwaltlich begleiten lassen. Hier entstehen schnell persönliche Haftungsrisiken für den Vorstand."
+    },
+    {
+      "id": 10, "typ": "verbandswechsel", "label": "Wechsel des Prüfungsverbands",
+      "tor": 2, "organ": "satzung", "geng": ["§ 54 Abs. 3 GenG", "§ 54a GenG"], "esk": "Prüfverband empfohlen", "betrag": false,
+      "warum": "Jede eG muss Mitglied in einem Prüfungsverband sein — das ist Pflicht. Beim Wechsel darf keine Lücke entstehen, in der die eG keinem Verband angehört (§ 54 Abs. 3 GenG), sonst drohen Probleme bis hin zur Eintragungssperre.",
+      "satz": "Prüfen Sie, wer laut Satzung über den Wechsel entscheidet. Wichtig: Kündigung beim alten und Beitritt beim neuen Verband zeitlich so abstimmen, dass keine Lücke entsteht.",
+      "eskTxt": "Den Übergang mit beiden Verbänden abstimmen, damit die Pflichtmitgliedschaft lückenlos bleibt."
+    },
+    {
+      "id": 11, "typ": "gv_einberufen", "label": "Generalversammlung einberufen",
+      "tor": 2, "organ": "Vorstand", "geng": ["§ 44 GenG", "§ 46 GenG"], "esk": "keine", "betrag": false,
+      "warum": "Die Generalversammlung wird vom Vorstand einberufen (§ 44 GenG). Damit die dort gefassten Beschlüsse wirksam sind, müssen Frist und Form der Einladung genau stimmen (§ 46 GenG) — sonst sind alle Beschlüsse der Versammlung angreifbar.",
+      "satz": "Halten Sie die Ladungsfrist und -form Ihrer Satzung ein (häufig mindestens zwei Wochen, in Textform). Die Tagesordnung muss mit der Einladung bekannt gemacht werden.",
+      "eskTxt": "Keine externe Prüfung nötig — aber Frist und Form unbedingt einhalten, das ist der häufigste Anfechtungsgrund."
+    },
+    {
+      "id": 12, "typ": "anteil", "label": "Übertragung Geschäftsguthaben",
+      "tor": 2, "organ": "Vorstand", "geng": ["§ 76 GenG"], "esk": "keine", "betrag": false,
+      "warum": "Ein Mitglied kann sein Geschäftsguthaben auf ein anderes (künftiges) Mitglied übertragen und so ausscheiden, ohne dass es zu einer Auseinandersetzung kommt (§ 76 GenG). Die eG muss dem zustimmen und es dokumentieren.",
+      "satz": "Prüfen Sie die Voraussetzungen in Ihrer Satzung. Wird das Guthaben durch ein Vorstandsmitglied übertragen, entscheidet die Generalversammlung statt des Vorstands.",
+      "eskTxt": "Keine externe Prüfung nötig, solange die Voraussetzungen der Satzung eingehalten sind."
+    },
+    {
+      "id": 13, "typ": "prokura", "label": "Prokura erteilen",
+      "tor": 2, "organ": "Vorstand", "geng": ["§ 42 GenG"], "esk": "keine", "betrag": false, "katKey": "prokura",
+      "warum": "Mit einer Prokura geben Sie einer Person weitreichende Vertretungsmacht für die eG. Das ist ein bedeutsamer Schritt und muss zum Genossenschaftsregister angemeldet werden (§ 42 GenG), damit sie nach außen wirksam ist.",
+      "satz": "Steht Prokura in Ihrem Zustimmungskatalog, muss die Generalversammlung zustimmen. In jedem Fall: Anmeldung der Prokura beim Registergericht nicht vergessen.",
+      "eskTxt": "Keine externe Prüfung nötig — aber die Registeranmeldung ist Pflicht, sonst wirkt die Prokura nicht."
+    },
+    {
+      "id": 14, "typ": "verguetung", "label": "Vorstandsvergütung festlegen",
+      "tor": 1, "organ": "Generalversammlung", "geng": ["§ 9 Abs. 1 S. 3 GenG", "§ 24 Abs. 3 GenG"], "esk": "Anwalt empfohlen", "betrag": false, "rot": true, "stimmverbot": true,
+      "pruefhinweis": "Audit C2: Stimmverbots-Zitat (§ 43 Abs. 6 GenG) juristisch gegenprüfen; Begriff 'Selbstkontrahieren' stammt aus § 181 BGB.",
+      "warum": "Über die Vergütung des Vorstands darf der Vorstand nicht selbst entscheiden — das wäre ein Entscheiden in eigener Sache. Ohne Aufsichtsrat entscheidet deshalb die Generalversammlung (§ 9 Abs. 1 S. 3, § 24 Abs. 3 GenG). Das betroffene Vorstandsmitglied stimmt dabei nicht mit.",
+      "satz": "Das betroffene Vorstandsmitglied hat bei seiner eigenen Vergütung kein Stimmrecht (§ 43 Abs. 6 GenG, juristisch gegenprüfen). Die Höhe sollte angemessen und nachvollziehbar dokumentiert sein.",
+      "eskTxt": "Wegen des Interessenkonflikts und der Frage der Angemessenheit anwaltlich begleiten lassen."
+    },
+    {
+      "id": 15, "typ": "satzungsaenderung", "label": "Satzungsänderung",
+      "tor": 1, "organ": "Generalversammlung", "geng": ["§ 16 GenG"], "esk": "Prüfverband empfohlen", "betrag": false, "maj": "0,75",
+      "pruefhinweis": "Audit C1: Zuständigkeit GV = § 16 Abs. 1; ¾-Mehrheit = § 16 Abs. 2; für bestimmte Änderungen (z. B. Nachschusspflicht) 9/10-Mehrheit bzw. strengere Satzungsregeln — Fallunterscheidung ergänzen.",
+      "warum": "Eine Satzungsänderung kann nur die Generalversammlung beschließen (§ 16 Abs. 1 GenG), und zwar grundsätzlich mit einer Dreiviertelmehrheit der abgegebenen Stimmen (§ 16 Abs. 2 GenG); für bestimmte Änderungen gelten höhere Mehrheiten. Wirksam wird sie erst, wenn sie ins Genossenschaftsregister eingetragen ist — bis dahin gilt die alte Satzung.",
+      "satz": "Mindestens drei Viertel der abgegebenen Stimmen sind nötig (§ 16 Abs. 2 GenG). Für einzelne Änderungen (z. B. Nachschusspflicht, Gegenstandserweiterung) kann eine höhere Mehrheit erforderlich sein — das prüfen Sie in Ihrer Satzung.",
+      "eskTxt": "Vorher den Prüfungsverband anhören. Für die Eintragung ins Register sind Notar und Anmeldung erforderlich."
+    },
+    {
+      "id": 16, "typ": "jahresabschluss", "label": "Feststellung des Jahresabschlusses",
+      "tor": 1, "organ": "Generalversammlung", "geng": ["§ 48 Abs. 1 GenG"], "esk": "keine", "betrag": false, "zwingend": true,
+      "warum": "Den Jahresabschluss festzustellen ist allein Sache der Generalversammlung — das kann der Vorstand nicht übernehmen (§ 48 Abs. 1 GenG). Erst mit diesem Beschluss ist der Jahresabschluss wirksam festgestellt.",
+      "satz": "Die Generalversammlung muss innerhalb von sechs Monaten nach Ende des Geschäftsjahres stattfinden. Halten Sie diese Frist im Blick — sie ist verbindlich.",
+      "eskTxt": "Keine externe Prüfung nötig — aber die Sechs-Monats-Frist unbedingt einhalten."
+    },
+    {
+      "id": 17, "typ": "fahrzeug", "label": "Fahrzeug anschaffen (Nutzung durch Mitglieder)",
+      "geng": ["§ 27 GenG", "§ 1 GenG (Förderzweck)", "Satzung"], "esk": "auto", "betrag": true, "schwelle": "invest", "katKey": "investition", "foerderfokus": true,
+      "warum": "Die Anschaffung eines Fahrzeugs ist eine Investition. Ob ein Beschluss nötig ist, hängt von der Investitionsgrenze Ihrer Satzung ab. Wichtig ist hier zusätzlich: Wenn das Fahrzeug den Mitgliedern zugutekommt, sollten Sie den Förderbezug klar darstellen (§ 1 GenG) — also wie die Mitglieder konkret profitieren.",
+      "satz": "Prüfen Sie die Investitionsgrenze Ihrer Satzung. Halten Sie zusätzlich fest, wie die Mitglieder das Fahrzeug nutzen dürfen und mit welchem Wert sie sich beteiligen (Nutzungs- und Beteiligungsregelung).",
+      "eskTxt": "Bei höherem Anschaffungswert den Prüfungsverband einbinden. Die steuerliche Behandlung (Förderzweck, geldwerter Vorteil) sollte ein Steuerberater würdigen."
+    },
+    {
+      "id": 18, "typ": "objekt", "label": "Objekt / Ferienwohnung anmieten",
+      "geng": ["§ 27 GenG", "Satzung"], "esk": "keine", "betrag": true, "schwelle": "dauer", "katKey": "vertrag_bedeutung", "foerderfokus": true,
+      "warum": "Die Anmietung eines Objekts ist ein Dauerschuldverhältnis und kann die eG länger binden. Kommt sie den Mitgliedern zugute (z. B. vergünstigte Nutzung), ist der Förderbezug darzustellen. Ob ein Beschluss nötig ist, richtet sich nach der Jahres-Wertgrenze Ihrer Satzung.",
+      "satz": "Prüfen Sie, ob Ihr Zustimmungskatalog Dauerschuldverhältnisse nach Jahreswert erfasst. Stellen Sie dar, welchen konkreten Vorteil die Mitglieder durch die Anmietung erhalten (Mitgliederförderung).",
+      "eskTxt": "Bei langer Laufzeit oder hohem Jahreswert den Prüfungsverband einbinden."
+    },
+    {
+      "id": 19, "typ": "foerdermassnahme", "label": "Mitglieder-Fördermaßnahme / Projekt (z. B. Reise)",
+      "tor": 5, "geng": ["§ 27 Abs. 1 GenG", "§ 1 GenG"], "esk": "keine", "betrag": false, "foerderfokus": true,
+      "warum": "Eine Maßnahme, die unmittelbar dem Förderzweck dient (z. B. ein Projekt oder eine Reise für Mitglieder), gehört in der Regel zur Geschäftsführung — der Vorstand kann sie ohne förmlichen Beschluss umsetzen (§ 27 Abs. 1, § 1 GenG). Ein Aktenvermerk mit Förderbezug ist zur Dokumentation aber dringend zu empfehlen.",
+      "satz": "Vergewissern Sie sich, dass die Maßnahme von Zweck und Gegenstand Ihrer Satzung gedeckt ist. Beschreiben Sie den Nutzen für die Mitglieder konkret.",
+      "eskTxt": "In der Regel keine externe Prüfung. Bei größerem Budget die Investitions-/Dauerschuldgrenze und Ihren Zustimmungskatalog prüfen."
+    }
+  ]
+}

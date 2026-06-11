@@ -2,37 +2,55 @@
 
 **Beschluss-Generator für Vorstände und Organe von Genossenschaften (eG)** – Teil der GenoPilot-AI-Plattform.
 
-> Hinweis: Dieser Ordner ist als eigenständiges Repo „Beschlussgenerator-eG" konzipiert. Das automatische Anlegen eines neuen GitHub-Repos war mit den Berechtigungen dieser Session nicht möglich (403). Sobald das leere Repo `kibuddy/Beschlussgenerator-eG` existiert und für die Integration freigegeben ist, kann dieser Ordner 1:1 dorthin überführt werden.
+Vorstände tragen Stichpunkte ein; das System bestimmt deterministisch die rechtliche Einordnung nach GenG und Satzung (zuständiges Organ, Beschlussart, Mehrheit, Eskalation), formuliert per KI einen sauberen Entwurf und prüft bestehende Beschlüsse auf Pflichtbestandteile. Positionierung: **unterstützendes Werkzeug, keine Rechtsberatung** – die Verantwortung bleibt beim Vorstand.
 
-## Was ist das?
+## Schnellstart (Prototyp V8.2)
 
-Ein Werkzeug, das Vorständen kleiner Genossenschaften hilft:
+```bash
+ANTHROPIC_API_KEY=sk-ant-... node phase-1/dev-proxy/server.mjs
+# → http://localhost:8787/   (ohne Key läuft die UI ohne KI-Formulierung)
+```
 
-1. **Beschluss erzeugen** – aus Stichpunkten wird ein formal sauberer Beschluss-Entwurf (Sitzungsbeschluss, Umlaufbeschluss, Protokollauszug oder Aktenvermerk), inkl. rechtlicher Einordnung nach GenG und Satzung (Zuständigkeit Vorstand / Generalversammlung / Aufsichtsrat, Mehrheiten, Stimmverbote, Eskalationsempfehlungen).
-2. **Beschluss prüfen** – Formalkontrolle eines bestehenden Beschlusstextes gegen Pflichtbestandteile mit konkreten Passus-Vorschlägen.
+Tests der Regel-Engine:
 
-Positionierung: **unterstützendes Werkzeug, keine Rechtsberatung.** Die Verantwortung bleibt beim Vorstand (Mensch-in-der-Schleife).
+```bash
+node --test phase-2/packages/geng-engine/engine.test.mjs
+```
 
-## Inhalt dieses Ordners
+## Struktur
 
 | Pfad | Inhalt |
 |---|---|
-| `docs/01-pruefbericht.md` | **Audit des Prototyps V8.1** – technische Fehler, rechtliche Prüfpunkte (GenG), EU-AI-Act- und DSGVO-Check (Stand Juni 2026) |
-| `docs/02-roadmap.md` | **Zielarchitektur & Roadmap** – wie der Prototyp aufs nächste Level kommt (Backend, Mandantenfähigkeit, revisionssichere Ablage, echte Dokumente) |
-| `docs/03-remotion-konzept.md` | **Visuelles Konzept mit Remotion** – animierte Erklär-Kompositionen, Player-Einbindung, Abgrenzung zu UI-Animationen |
-| `prototyp/BeschlussGenerator_Prototyp_v8.1.html` | Original-Prototyp (Single-File-HTML, Arbeitsstand) |
+| `docs/01-pruefbericht.md` | **Audit des Prototyps V8.1** – Technik, GenG, EU AI Act (Stand 06/2026), DSGVO |
+| `docs/02-roadmap.md` | Zielarchitektur & 4-Phasen-Roadmap |
+| `docs/03-remotion-konzept.md` | Visuelles Konzept (Remotion-Kompositionen K1–K5) |
+| `phase-1/` | **V8.2 – umgesetzt:** Prototyp mit allen kritischen Fixes (XSS, AR-Bug, Modell `claude-opus-4-8`, KI über EU-Proxy), Supabase Edge Function, lokaler Dev-Proxy |
+| `phase-2/` | **Gerüst:** SQL-Schema mit RLS + Audit-Hash-Kette + Nummernvergabe (V/GV/AR), extrahierte Regel-Engine `geng-engine` mit versionierter Wissensbasis und Tests |
+| `phase-3/` | **Vorlagen:** AI-Act-Assessment (Stichtag 02.08.2026), DSFA-Checkliste, AVV-Checkliste |
+| `phase-4/` | Integrations-Spezifikation (Mitglieder-/Versammlungsmodul, E-Signatur, KI-Assistent) |
+| `prototyp/` | Original V8.1 (unverändert, Referenz für das Audit) |
 
 ## Status
 
-- ✅ Prototyp V8.1 fachlich/technisch auditiert (siehe Prüfbericht)
-- ⚠️ **Kritisch:** Die KI-Anbindung des Prototyps ist funktionsunfähig (fehlende API-Header) und das referenzierte Modell `claude-sonnet-4-20250514` wird am **15.06.2026 abgeschaltet** → Fix in Phase 1 der Roadmap
-- 🔜 Nächster Schritt: Phase 1 der Roadmap (sicherer API-Proxy + Quick-Fixes)
+- ✅ Audit abgeschlossen (`docs/01-pruefbericht.md`)
+- ✅ Phase 1 umgesetzt: V8.2 end-to-end lauffähig, 12/12 Engine-Tests grün
+- 🔜 Phase 2: Supabase-Projekt (EU) anlegen, Next.js-Umbau (`phase-2/README.md`)
+- ⏳ Phase 3: rechtliche Abnahmen vor dem 02.08.2026 (`phase-3/README.md`)
 
-## Verwandte Repos / Quellen
+## Dieses Verzeichnis als eigenes Repo „Beschlussgenerator-eG" anlegen
 
-- `kibuddy/genossenschaften-experte-2026` – Wissensbasis & Checklisten (GenG-Fachwissen)
-- `kibuddy/chiefmind-fuer-genossenschaften` – Compliance-Notizen (u. a. EU AI Act)
-- Businessplan GenoPilot AI (Juni 2026) & Konzept-Pitchdeck „Die KI-gestützte Verwaltungsplattform für Genossenschaften"
+Die Claude-Session konnte kein neues GitHub-Repo erstellen (Berechtigung der Integration). So überführst du den Ordner in ein eigenes Repo:
+
+```bash
+# 1. Leeres Repo kibuddy/Beschlussgenerator-eG auf GitHub anlegen (ohne README)
+# 2. Lokal aus diesem Repo heraus:
+git clone https://github.com/kibuddy/genossenschaften-experte-2026 -b claude/beschlussgenerator-audit-nyyrdj
+cd genossenschaften-experte-2026
+git subtree split -P beschlussgenerator-eg -b beschlussgenerator-export
+git push https://github.com/kibuddy/Beschlussgenerator-eG.git beschlussgenerator-export:main
+```
+
+Alternativ: neues Repo anlegen, der Claude-GitHub-Integration freigeben und die nächste Claude-Session mit beiden Repos starten – dann übernimmt Claude den Umzug.
 
 ---
-*Dieses Projekt erstellt Entwürfe zur Arbeitserleichterung und ersetzt keine Rechts-, Steuer- oder Finanzberatung.*
+*Dieses Projekt erstellt Entwürfe zur Arbeitserleichterung und ersetzt keine Rechts-, Steuer- oder Finanzberatung. Rechtliche Inhalte stehen unter juristischem Abnahmevorbehalt (siehe `phase-2/packages/geng-engine/README.md`).*
