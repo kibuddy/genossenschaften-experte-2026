@@ -1,6 +1,6 @@
 # Master-Bauplan: Beschlussgenerator eG
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Stand:** 21.08.2026  
 **Status:** Ready for Grok Build / Phase 2  
 **Autor:** Grok + Marek Schilke (GenoHeld / Genolution / ChiefMind)  
@@ -109,11 +109,19 @@ Supabase (EU)
 
 **Aktueller Stand:** 19 Vorgangsarten, Version 2026-06, 12/12 Tests grün, review_status = offen.
 
-### Offene juristische Punkte (müssen vor Pilot freigegeben werden)
-- § 16 GenG (Satzungsänderung): genaue ¾- vs. 9/10-Fälle trennen und prüfen
-- Stimmverbote (§ 43 Abs. 6 GenG + Selbstkontrahieren)
-- Mehrstimmrechte (§ 43 Abs. 3) – max. 3 Stimmen, Ausnahme Unternehmer-eG
-- Förderzweck-Bezug (§ 1 GenG) bei Investitionen und Maßnahmen stärker erzwingen
+### Offene juristische Punkte (konkret markiert am 21.08.2026)
+
+Die Punkte sind jetzt strukturiert in `regeln.json` unter `meta.offene_review_punkte` und als `pruefhinweis` bei den betroffenen Regeln hinterlegt:
+
+| ID | Thema | Betroffene Regeln | Status |
+|----|-------|-------------------|--------|
+| C1 | § 16 GenG – Satzungsänderung Mehrheiten (¾ vs. 9/10) | 15 | offen |
+| C2 | Stimmverbot bei Interessenkonflikt (§ 43 Abs. 6) | 9, 14 | offen |
+| C3 | Vorstandsvergütung – zuständiges Organ (GV vs. AR) | 14 | offen |
+| C4 | Förderzweck-Bezug (§ 1 GenG) | 5, 17, 18, 19 | offen |
+| C5 | Mehrstimmrechte (§ 43 Abs. 3) – noch nicht abgebildet | – | offen – Erweiterung |
+
+**Pflegeprozess:** Änderungen nur in `regeln.json` + Quellenangabe + Version bump. Nach Abnahme `review_status` aktualisieren und betroffene `pruefhinweis` / Einträge in `offene_review_punkte` entfernen bzw. auf „freigegeben“ setzen.
 
 ### Empfohlene Erweiterungen (Phase 2+)
 - Prokura / Handlungsvollmacht (§ 42)
@@ -121,8 +129,6 @@ Supabase (EU)
 - Fortsetzung nach Auflösung (§ 79a)
 - Vertreterversammlung (§ 43a)
 - Explizite Unterstützung virtueller / hybrider Formen (§ 43b + BEG IV)
-
-**Pflegeprozess:** Änderungen nur in `regeln.json` + Quellenangabe + Version bump. Nach Abnahme `review_status` aktualisieren.
 
 ---
 
@@ -186,7 +192,7 @@ Einstufung: **Kein Hochrisiko-System** (nur Entwürfe, Human Oversight, keine En
 4. Serverseitige Nummernvergabe + Audit-Hash
 5. Beschluss-Lebenszyklus (Statusmaschine)
 6. DOCX/PDF-Export
-7. Juristische Review-Liste der 19 Regeln finalisieren
+7. Juristische Review-Liste der 19 Regeln finalisieren (Abnahme beauftragen)
 8. Umlauf-Grundgerüst (mindestens Fristen + Status)
 
 ---
@@ -200,16 +206,17 @@ Einstufung: **Kein Hochrisiko-System** (nur Entwürfe, Human Oversight, keine En
 
 ---
 
-## 11. Nächste Schritte (sofort)
+## 11. Nächste Schritte
 
-1. Dieser Master-Bauplan wird als Single Source of Truth behandelt.
-2. Offene GenG-Punkte in `regeln.json` markieren und Review beauftragen.
-3. Phase-2-Backlog in Issues / Linear / Notion anlegen.
-4. Grok Build Session für Next.js + Supabase starten.
+1. [x] Dieser Master-Bauplan wird als Single Source of Truth behandelt.
+2. [x] Offene GenG-Punkte in `regeln.json` markieren und Review beauftragen. *(erledigt 21.08.2026)*
+3. [ ] Phase-2-Backlog in Issues / Linear / Notion anlegen.
+4. [ ] Grok Build Session für Next.js + Supabase starten.
 
 ---
 
 *Dieses Dokument ersetzt die fragmentierten Einzel-Docs und dient als verbindlicher Bauplan für die weitere Entwicklung. Änderungen werden versioniert und hier dokumentiert.*
 
 **Changelog**  
+- 1.1 (21.08.2026): Schritt 1 erledigt – offene GenG-Review-Punkte strukturiert in `regeln.json` und README markiert.  
 - 1.0 (21.08.2026): Erstversion – konsolidiert aus Audit, Roadmap, Regel-Engine, GenG-Check und Resolvio-Analyse.
