@@ -2,15 +2,60 @@
   "meta": {
     "version": "2026-06",
     "stand": "GenG, Stand Juni 2026 · extrahiert aus Prototyp V8.1/V8.2",
-    "review_status": "offen – juristische Abnahme durch Prüfungsverband/Anwalt ausstehend (siehe docs/01-pruefbericht.md, Abschnitt C)",
+    "review_status": "offen – juristische Abnahme durch Prüfungsverband/Anwalt ausstehend",
+    "review_prioritaet": "hoch",
+    "letzte_markierung": "2026-08-21 (Master-Bauplan Schritt 1)",
     "hinweis": "Diese Wissensbasis ist die fachliche Grundlage der deterministischen Regel-Engine. Änderungen nur mit Quellenangabe und neuem Stand. Keine Rechtsberatung.",
+    "offene_review_punkte": [
+      {
+        "id": "C1",
+        "regeln": [15],
+        "thema": "§ 16 GenG – Satzungsänderung Mehrheiten",
+        "beschreibung": "Zuständigkeit GV = § 16 Abs. 1. ¾-Mehrheit = § 16 Abs. 2 für die meisten Fälle. Für bestimmte Änderungen (Nachschusspflicht, Gegenstand, Pflichtbeteiligung, investierende Mitglieder etc.) gelten teilweise 9/10 oder strengere Satzungsregeln. Fallunterscheidung muss in der Engine und den Texten sauber getrennt werden.",
+        "quelle": "docs/01-pruefbericht.md Abschnitt C + GenG § 16 Abs. 2 und 3",
+        "status": "offen"
+      },
+      {
+        "id": "C2",
+        "regeln": [9, 14],
+        "thema": "Stimmverbot bei Interessenkonflikt",
+        "beschreibung": "§ 43 Abs. 6 GenG regelt das Stimmverbot. Der Begriff ‚Selbstkontrahieren‘ stammt aus § 181 BGB und ist im GenG-Kontext unpräzise. Zitat und Begründung juristisch gegenprüfen und neutral formulieren.",
+        "quelle": "docs/01-pruefbericht.md Abschnitt C + GenG § 43 Abs. 6",
+        "status": "offen"
+      },
+      {
+        "id": "C3",
+        "regeln": [14],
+        "thema": "Vorstandsvergütung – zuständiges Organ",
+        "beschreibung": "Ohne Aufsichtsrat entscheidet die GV (§ 9 Abs. 1 S. 3, § 24 Abs. 3 GenG). Mit Aufsichtsrat oft der AR. Logik und Texte auf beide Fälle prüfen.",
+        "quelle": "GenG + Mustersatzungspraxis",
+        "status": "offen"
+      },
+      {
+        "id": "C4",
+        "regeln": [5, 17, 18, 19],
+        "thema": "Förderzweck-Bezug (§ 1 GenG)",
+        "beschreibung": "Bei Investitionen und Maßnahmen, die Mitgliedern zugutekommen, sollte der Förderbezug stärker erzwungen und dokumentiert werden. Prüfen, ob foerderfokus-Flag und Texte ausreichend sind.",
+        "quelle": "GenG § 1 + Prüfverbandspraxis 2025/2026",
+        "status": "offen"
+      },
+      {
+        "id": "C5",
+        "regeln": [],
+        "thema": "Mehrstimmrechte (§ 43 Abs. 3 GenG)",
+        "beschreibung": "Noch nicht explizit abgebildet. Max. 3 Stimmen, Ausnahme Unternehmer-eG. In Phase 2 in Profil und resolve()-Logik aufnehmen.",
+        "quelle": "GenG § 43 Abs. 3",
+        "status": "offen – Erweiterung"
+      }
+    ],
     "felder": {
       "tor": "1 = zwingend GV · 2 = Beschluss durch benanntes Organ · 5 = Geschäftsführung (kein Beschluss nötig)",
       "esk": "Eskalationsempfehlung: keine | auto | Prüfverband empfohlen | Anwalt empfohlen",
       "schwelle": "Profilfeld der Satzungs-Betragsgrenze: invest | darlehen | dauer",
       "katKey": "Schlüssel im Zustimmungskatalog der Satzung",
       "rot": "rote Linie – externe Prüfung dringend",
-      "stimmverbot": "Stimmverbot des betroffenen Organmitglieds beachten"
+      "stimmverbot": "Stimmverbot des betroffenen Organmitglieds beachten",
+      "pruefhinweis": "Interner Hinweis für juristische Review – wird in der UI nicht angezeigt"
     }
   },
   "regeln": [
@@ -73,9 +118,9 @@
     {
       "id": 9, "typ": "kredit_vorstand", "label": "Kredit an Vorstandsmitglied",
       "tor": 2, "organ": "Generalversammlung", "geng": ["§ 49 GenG", "Satzung"], "esk": "Anwalt empfohlen", "betrag": false, "rot": true, "stimmverbot": true,
-      "pruefhinweis": "Audit C2: Stimmverbots-Zitat (§ 43 Abs. 6 GenG) juristisch gegenprüfen; Begriff 'Selbstkontrahieren' stammt aus § 181 BGB.",
+      "pruefhinweis": "C2: Stimmverbots-Zitat (§ 43 Abs. 6 GenG) juristisch gegenprüfen. Begriff ‚Selbstkontrahieren‘ stammt aus § 181 BGB und ist im GenG-Kontext unpräzise. Neutral formulieren.",
       "warum": "Wenn die eG einem Vorstandsmitglied einen Kredit gewährt, besteht ein offensichtlicher Interessenkonflikt. Deshalb muss die Generalversammlung ausdrücklich zustimmen (§ 49 GenG) — und das betroffene Vorstandsmitglied darf bei dieser Abstimmung nicht mitstimmen.",
-      "satz": "Das betroffene Vorstandsmitglied hat kein Stimmrecht (§ 43 Abs. 6 GenG). Dokumentieren Sie, dass die Konditionen marktüblich sind, damit kein verdeckter Vorteil entsteht.",
+      "satz": "Das betroffene Vorstandsmitglied hat kein Stimmrecht (§ 43 Abs. 6 GenG – juristisch gegenprüfen). Dokumentieren Sie, dass die Konditionen marktüblich sind, damit kein verdeckter Vorteil entsteht.",
       "eskTxt": "Wegen des Interessenkonflikts anwaltlich begleiten lassen. Hier entstehen schnell persönliche Haftungsrisiken für den Vorstand."
     },
     {
@@ -109,17 +154,17 @@
     {
       "id": 14, "typ": "verguetung", "label": "Vorstandsvergütung festlegen",
       "tor": 1, "organ": "Generalversammlung", "geng": ["§ 9 Abs. 1 S. 3 GenG", "§ 24 Abs. 3 GenG"], "esk": "Anwalt empfohlen", "betrag": false, "rot": true, "stimmverbot": true,
-      "pruefhinweis": "Audit C2: Stimmverbots-Zitat (§ 43 Abs. 6 GenG) juristisch gegenprüfen; Begriff 'Selbstkontrahieren' stammt aus § 181 BGB.",
+      "pruefhinweis": "C2 + C3: Stimmverbot (§ 43 Abs. 6 GenG) gegenprüfen. Zuständigkeit: ohne AR = GV; mit AR oft AR. Logik und Texte auf beide Fälle prüfen.",
       "warum": "Über die Vergütung des Vorstands darf der Vorstand nicht selbst entscheiden — das wäre ein Entscheiden in eigener Sache. Ohne Aufsichtsrat entscheidet deshalb die Generalversammlung (§ 9 Abs. 1 S. 3, § 24 Abs. 3 GenG). Das betroffene Vorstandsmitglied stimmt dabei nicht mit.",
-      "satz": "Das betroffene Vorstandsmitglied hat bei seiner eigenen Vergütung kein Stimmrecht (§ 43 Abs. 6 GenG, juristisch gegenprüfen). Die Höhe sollte angemessen und nachvollziehbar dokumentiert sein.",
+      "satz": "Das betroffene Vorstandsmitglied hat bei seiner eigenen Vergütung kein Stimmrecht (§ 43 Abs. 6 GenG – juristisch gegenprüfen). Die Höhe sollte angemessen und nachvollziehbar dokumentiert sein.",
       "eskTxt": "Wegen des Interessenkonflikts und der Frage der Angemessenheit anwaltlich begleiten lassen."
     },
     {
       "id": 15, "typ": "satzungsaenderung", "label": "Satzungsänderung",
       "tor": 1, "organ": "Generalversammlung", "geng": ["§ 16 GenG"], "esk": "Prüfverband empfohlen", "betrag": false, "maj": "0,75",
-      "pruefhinweis": "Audit C1: Zuständigkeit GV = § 16 Abs. 1; ¾-Mehrheit = § 16 Abs. 2; für bestimmte Änderungen (z. B. Nachschusspflicht) 9/10-Mehrheit bzw. strengere Satzungsregeln — Fallunterscheidung ergänzen.",
+      "pruefhinweis": "C1: Zuständigkeit GV = § 16 Abs. 1. ¾-Mehrheit = § 16 Abs. 2 für Standardfälle. Für Nachschusspflicht, Gegenstand, Pflichtbeteiligung, investierende Mitglieder etc. teilweise 9/10 oder strengere Satzungsregeln (§ 16 Abs. 2 Nr. 1–11 und Abs. 3). Fallunterscheidung in Engine und Texten ergänzen.",
       "warum": "Eine Satzungsänderung kann nur die Generalversammlung beschließen (§ 16 Abs. 1 GenG), und zwar grundsätzlich mit einer Dreiviertelmehrheit der abgegebenen Stimmen (§ 16 Abs. 2 GenG); für bestimmte Änderungen gelten höhere Mehrheiten. Wirksam wird sie erst, wenn sie ins Genossenschaftsregister eingetragen ist — bis dahin gilt die alte Satzung.",
-      "satz": "Mindestens drei Viertel der abgegebenen Stimmen sind nötig (§ 16 Abs. 2 GenG). Für einzelne Änderungen (z. B. Nachschusspflicht, Gegenstandserweiterung) kann eine höhere Mehrheit erforderlich sein — das prüfen Sie in Ihrer Satzung.",
+      "satz": "Mindestens drei Viertel der abgegebenen Stimmen sind nötig (§ 16 Abs. 2 GenG). Für einzelne Änderungen (z. B. Nachschusspflicht, Gegenstandserweiterung) kann eine höhere Mehrheit erforderlich sein — das prüfen Sie in Ihrer Satzung und ggf. beim Prüfungsverband.",
       "eskTxt": "Vorher den Prüfungsverband anhören. Für die Eintragung ins Register sind Notar und Anmeldung erforderlich."
     },
     {
